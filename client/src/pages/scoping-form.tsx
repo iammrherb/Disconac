@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useParams } from "wouter";
+import { useState, useEffect } from "react";
+import { useParams, useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -15,8 +15,10 @@ import { SectionRenderer } from "@/components/SectionRenderer";
 
 export default function ScopingForm() {
   const { id } = useParams();
+  const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState(questionnaireConfig[0].id);
+  const [isCreatingSession, setIsCreatingSession] = useState(false);
   
   // Initialize form data with all field IDs from configuration
   const initializeFormData = () => {
@@ -33,9 +35,47 @@ export default function ScopingForm() {
 
   const [formData, setFormData] = useState(initializeFormData());
 
+  // If id is "new", create a default customer and session, then redirect
+  useEffect(() => {
+    if (id === "new" && !isCreatingSession) {
+      setIsCreatingSession(true);
+      const createSessionWithCustomer = async () => {
+        try {
+          // Create default customer
+          const customer = await apiRequest("POST", "/api/customers", {
+            companyName: "New Customer",
+            contactName: "Primary Contact",
+            contactEmail: "contact@company.com",
+            industry: "Technology",
+            companySize: "1-50",
+          });
+          
+          // Create session
+          const session = await apiRequest("POST", "/api/sessions", {
+            customerId: customer.id,
+            sessionName: `Scoping Session - ${new Date().toLocaleDateString()}`,
+            status: "draft",
+          });
+          
+          if (session?.id) {
+            setLocation(`/scoping/${session.id}`);
+          }
+        } catch (error) {
+          toast({
+            title: "Error",
+            description: "Failed to create session",
+            variant: "destructive",
+          });
+          setIsCreatingSession(false);
+        }
+      };
+      createSessionWithCustomer();
+    }
+  }, [id, isCreatingSession, toast, setLocation]);
+
   const { data: session, isLoading: sessionLoading } = useQuery<ScopingSession>({
     queryKey: ["/api/sessions", id],
-    enabled: !!id,
+    enabled: !!id && id !== "new",
   });
 
   const { data: checklist } = useQuery<DeploymentChecklist[]>({
