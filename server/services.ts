@@ -237,10 +237,10 @@ export async function saveGeneratedChecklist(
     await storage.createChecklistItem({
       sessionId,
       category: rec.category,
-      task: rec.task,
-      description: rec.description,
+      itemTitle: rec.task,
+      itemDescription: rec.description,
       priority: rec.priority,
-      documentationLinks: rec.relatedDocs.map(d => d.url),
+      relatedDocUrl: rec.relatedDocs.length > 0 ? rec.relatedDocs[0].url : null,
       completed: false,
     });
   }

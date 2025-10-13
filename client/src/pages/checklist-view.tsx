@@ -47,16 +47,12 @@ export default function ChecklistView() {
       
       // Convert responses array to object format for API
       const responsesObj = responses.reduce((acc, r) => {
-        try {
-          acc[r.questionId] = JSON.parse(r.answer);
-        } catch {
-          acc[r.questionId] = r.answer;
-        }
+        acc[r.question] = r.response;
         return acc;
       }, {} as Record<string, any>);
       
       const result = await apiRequest("POST", "/api/documentation/recommendations", responsesObj);
-      return result;
+      return result as unknown as DocumentationLink[];
     },
     enabled: !!responses && responses.length > 0 && isAuthenticated,
   });
@@ -202,26 +198,23 @@ export default function ChecklistView() {
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
                       <h4 className={`font-medium ${item.completed ? 'line-through text-muted-foreground' : ''}`}>
-                        {item.task}
+                        {item.itemTitle}
                       </h4>
-                      <p className="text-sm text-muted-foreground mt-1">{item.description}</p>
+                      <p className="text-sm text-muted-foreground mt-1">{item.itemDescription}</p>
                     </div>
-                    {getPriorityBadge(item.priority)}
+                    {getPriorityBadge(item.priority || "medium")}
                   </div>
-                  {item.documentationLinks && item.documentationLinks.length > 0 && (
+                  {item.relatedDocUrl && (
                     <div className="flex flex-wrap gap-2 pt-2">
-                      {item.documentationLinks.map((link, idx) => (
-                        <a
-                          key={idx}
-                          href={link}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
-                        >
-                          <ExternalLink className="h-3 w-3" />
-                          Documentation {idx + 1}
-                        </a>
-                      ))}
+                      <a
+                        href={item.relatedDocUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
+                      >
+                        <ExternalLink className="h-3 w-3" />
+                        Related Documentation
+                      </a>
                     </div>
                   )}
                 </div>
