@@ -18,20 +18,46 @@ import {
   insertMilestoneTaskSchema
 } from "@shared/schema";
 
-// Temporary test user ID (no authentication)
-const TEST_USER_ID = "test-user-123";
+// Helper function to get authenticated user ID from request
+function getUserId(req: any): string | null {
+  if (!req.isAuthenticated() || !req.user) {
+    return null;
+  }
+  const claims = (req.user as any).claims;
+  return claims?.sub || null;
+}
+
+// Middleware to require authentication and return user ID
+function requireAuth(req: any, res: any): string | null {
+  const userId = getUserId(req);
+  if (!userId) {
+    res.status(401).json({ message: "Unauthorized" });
+    return null;
+  }
+  return userId;
+}
 
 export async function registerRoutes(app: Express): Promise<Server> {
 
-  // ========== Auth Routes (disabled - no authentication) ==========
+  // ========== Auth Routes ==========
   
   app.get('/api/auth/user', async (req: any, res) => {
-    // Return a test user since auth is disabled
+    const userId = getUserId(req);
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const user = await storage.getUser(userId);
+    if (!user) {
+      return res.status(401).json({ message: "User not found" });
+    }
+
     res.json({
-      id: TEST_USER_ID,
-      email: "test@portnox.com",
-      name: "Test User",
-      imageUrl: null
+      id: user.id,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      profileImageUrl: user.profileImageUrl
     });
   });
 
@@ -39,7 +65,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   app.get('/api/customers', async (req: any, res) => {
     try {
-      const userId = TEST_USER_ID;
+      const userId = requireAuth(req, res);
+      if (!userId) return;
+      
       const customers = await storage.getCustomersByUserId(userId);
       res.json(customers);
     } catch (error) {
@@ -50,13 +78,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/customers/:id', async (req: any, res) => {
     try {
+      const userId = requireAuth(req, res);
+      if (!userId) return;
+
       const customer = await storage.getCustomer(req.params.id);
       if (!customer) {
         return res.status(404).json({ message: "Customer not found" });
       }
       
       // Verify ownership
-      const userId = TEST_USER_ID;
       if (customer.userId !== userId) {
         return res.status(403).json({ message: "Forbidden" });
       }
@@ -70,7 +100,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/customers', async (req: any, res) => {
     try {
-      const userId = TEST_USER_ID;
+      const userId = requireAuth(req, res);
+      if (!userId) return;
+
       const validated = insertCustomerProfileSchema.parse(req.body);
       
       const customer = await storage.createCustomer({
@@ -90,13 +122,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put('/api/customers/:id', async (req: any, res) => {
     try {
+      const userId = requireAuth(req, res);
+      if (!userId) return;
+
       const customer = await storage.getCustomer(req.params.id);
       if (!customer) {
         return res.status(404).json({ message: "Customer not found" });
       }
       
       // Verify ownership
-      const userId = TEST_USER_ID;
       if (customer.userId !== userId) {
         return res.status(403).json({ message: "Forbidden" });
       }
@@ -116,13 +150,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete('/api/customers/:id', async (req: any, res) => {
     try {
+      const userId = requireAuth(req, res);
+      if (!userId) return;
+
       const customer = await storage.getCustomer(req.params.id);
       if (!customer) {
         return res.status(404).json({ message: "Customer not found" });
       }
       
       // Verify ownership
-      const userId = TEST_USER_ID;
       if (customer.userId !== userId) {
         return res.status(403).json({ message: "Forbidden" });
       }
@@ -139,7 +175,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   app.get('/api/sessions', async (req: any, res) => {
     try {
-      const userId = TEST_USER_ID;
+      const userId = requireAuth(req, res);
+      if (!userId) return;
       const sessions = await storage.getSessionsByUserId(userId);
       res.json(sessions);
     } catch (error) {
@@ -150,7 +187,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/sessions/recent', async (req: any, res) => {
     try {
-      const userId = TEST_USER_ID;
+      const userId = requireAuth(req, res);
+      if (!userId) return;
       const limit = parseInt(req.query.limit as string) || 5;
       const sessions = await storage.getRecentSessionsByUserId(userId, limit);
       res.json(sessions);
@@ -173,7 +211,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Customer not found" });
       }
       
-      const userId = TEST_USER_ID;
+      const userId = requireAuth(req, res);
+      if (!userId) return;
       if (customer.userId !== userId) {
         return res.status(403).json({ message: "Forbidden" });
       }
@@ -187,7 +226,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/sessions', async (req: any, res) => {
     try {
-      const userId = TEST_USER_ID;
+      const userId = requireAuth(req, res);
+      if (!userId) return;
       const validated = insertScopingSessionSchema.parse(req.body);
       
       // Verify customer ownership
@@ -220,7 +260,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Customer not found" });
       }
       
-      const userId = TEST_USER_ID;
+      const userId = requireAuth(req, res);
+      if (!userId) return;
       if (customer.userId !== userId) {
         return res.status(403).json({ message: "Forbidden" });
       }
@@ -251,7 +292,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Customer not found" });
       }
       
-      const userId = TEST_USER_ID;
+      const userId = requireAuth(req, res);
+      if (!userId) return;
       if (customer.userId !== userId) {
         return res.status(403).json({ message: "Forbidden" });
       }
@@ -279,7 +321,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Customer not found" });
       }
       
-      const userId = TEST_USER_ID;
+      const userId = requireAuth(req, res);
+      if (!userId) return;
       if (customer.userId !== userId) {
         return res.status(403).json({ message: "Forbidden" });
       }
@@ -305,7 +348,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Customer not found" });
       }
       
-      const userId = TEST_USER_ID;
+      const userId = requireAuth(req, res);
+      if (!userId) return;
       if (customer.userId !== userId) {
         return res.status(403).json({ message: "Forbidden" });
       }
@@ -542,7 +586,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Customer not found" });
       }
       
-      const userId = TEST_USER_ID;
+      const userId = requireAuth(req, res);
+      if (!userId) return;
       if (customer.userId !== userId) {
         return res.status(403).json({ message: "Forbidden" });
       }
@@ -568,7 +613,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Customer not found" });
       }
       
-      const userId = TEST_USER_ID;
+      const userId = requireAuth(req, res);
+      if (!userId) return;
       if (customer.userId !== userId) {
         return res.status(403).json({ message: "Forbidden" });
       }
@@ -622,7 +668,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   app.get('/api/stats', async (req: any, res) => {
     try {
-      const userId = TEST_USER_ID;
+      const userId = requireAuth(req, res);
+      if (!userId) return;
       const stats = await storage.getUserStats(userId);
       res.json(stats);
     } catch (error) {
@@ -646,7 +693,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Customer not found" });
       }
       
-      const userId = TEST_USER_ID;
+      const userId = requireAuth(req, res);
+      if (!userId) return;
       if (customer.userId !== userId) {
         return res.status(403).json({ message: "Forbidden" });
       }
@@ -806,7 +854,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   app.get('/api/catalogs', async (req: any, res) => {
     try {
-      const userId = TEST_USER_ID;
+      const userId = requireAuth(req, res);
+      if (!userId) return;
       const catalogs = await storage.getUserCatalogs(userId);
       res.json(catalogs);
     } catch (error) {
@@ -830,7 +879,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/catalogs', async (req: any, res) => {
     try {
-      const userId = TEST_USER_ID;
+      const userId = requireAuth(req, res);
+      if (!userId) return;
       const validated = insertOptionCatalogSchema.parse({
         ...req.body,
         userId
