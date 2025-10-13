@@ -99,6 +99,11 @@ export function SectionRenderer({ fields, formData, onFieldChange }: SectionRend
 
       case 'checkbox-group':
         const selectedOptions = Array.isArray(value) ? value : [];
+        const otherTextFieldId = `${field.id}_other_text`;
+        const hasOther = field.options?.includes('Other');
+        const isOtherSelected = selectedOptions.includes('Other');
+        const otherTextValue = formData[otherTextFieldId] || '';
+        
         return (
           <div key={field.id} className="space-y-3">
             <Label>
@@ -119,6 +124,10 @@ export function SectionRenderer({ fields, formData, onFieldChange }: SectionRend
                         onFieldChange(field.id, [...selectedOptions, option]);
                       } else {
                         onFieldChange(field.id, selectedOptions.filter((o: string) => o !== option));
+                        // Clear "Other" text when unchecking "Other"
+                        if (option === 'Other') {
+                          onFieldChange(otherTextFieldId, '');
+                        }
                       }
                     }}
                     data-testid={`checkbox-${field.id}-${option.toLowerCase().replace(/\s+/g, '-').replace(/[()]/g, '')}`}
@@ -132,6 +141,22 @@ export function SectionRenderer({ fields, formData, onFieldChange }: SectionRend
                 </div>
               ))}
             </div>
+            {hasOther && isOtherSelected && (
+              <div className="mt-3 pl-6">
+                <Label htmlFor={otherTextFieldId} className="text-sm">
+                  Please specify other vendor(s):
+                </Label>
+                <Input
+                  id={otherTextFieldId}
+                  type="text"
+                  placeholder="Enter vendor name(s), separated by commas"
+                  value={otherTextValue}
+                  onChange={(e) => onFieldChange(otherTextFieldId, e.target.value)}
+                  className="mt-1"
+                  data-testid={`input-${otherTextFieldId}`}
+                />
+              </div>
+            )}
           </div>
         );
 
