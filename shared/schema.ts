@@ -118,12 +118,121 @@ export const appSettings = pgTable("app_settings", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Checklist templates - Portnox-branded deployment templates
+export const checklistTemplates = pgTable("checklist_templates", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(), // e.g., "Standard NAC Deployment", "ZTNA Quick Start"
+  description: text("description"),
+  category: text("category").notNull(), // NAC, ZTNA, TACACS+
+  version: text("version").default("1.0"),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Template checklist items - Reusable task definitions
+export const checklistItemsTemplate = pgTable("checklist_items_template", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  templateId: varchar("template_id").notNull().references(() => checklistTemplates.id, { onDelete: "cascade" }),
+  phase: text("phase").notNull(), // e.g., "Prerequisites", "Phase 1: Planning", "Phase 2: Deployment"
+  itemTitle: text("item_title").notNull(),
+  itemDescription: text("item_description"),
+  bestPractice: text("best_practice"), // Detailed best practice guidance
+  prerequisites: text("prerequisites").array(), // Array of prerequisite steps
+  estimatedHours: integer("estimated_hours"),
+  priority: text("priority").notNull().default("medium"), // high, medium, low
+  relatedDocUrls: text("related_doc_urls").array(), // Array of documentation links
+  sortOrder: integer("sort_order").notNull().default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => [
+  index("idx_template_items_template").on(table.templateId, table.sortOrder),
+]);
+
+// Custom option catalogs - User-defined option sets
+export const optionCatalogs = pgTable("option_catalogs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  name: text("name").notNull(), // e.g., "My Network Vendors", "Custom Device Types"
+  type: text("type").notNull(), // vendor, device_type, category, application, etc.
+  description: text("description"),
+  isShared: boolean("is_shared").default(false), // Can be shared across users
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Option values within catalogs
+export const optionValues = pgTable("option_values", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  catalogId: varchar("catalog_id").notNull().references(() => optionCatalogs.id, { onDelete: "cascade" }),
+  value: text("value").notNull(), // e.g., "Cisco ISE", "Aruba ClearPass"
+  label: text("label").notNull(), // Display name
+  metadata: jsonb("metadata"), // Additional properties (version, capabilities, etc.)
+  sortOrder: integer("sort_order").notNull().default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => [
+  index("idx_option_values_catalog").on(table.catalogId, table.sortOrder),
+]);
+
+// NAC migration assessments
+export const nacAssessments = pgTable("nac_assessments", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  sessionId: varchar("session_id").notNull().references(() => scopingSessions.id, { onDelete: "cascade" }),
+  currentVendor: text("current_vendor"), // Existing NAC vendor
+  currentVersion: text("current_version"),
+  deploymentSize: text("deployment_size"), // small, medium, large, enterprise
+  currentCapabilities: text("current_capabilities").array(), // Array of current NAC features in use
+  desiredCapabilities: text("desired_capabilities").array(), // Desired Portnox features
+  migrationComplexity: text("migration_complexity"), // low, medium, high
+  estimatedTimeline: text("estimated_timeline"), // e.g., "3-6 months"
+  riskFactors: text("risk_factors").array(), // Identified migration risks
+  recommendedPath: text("recommended_path"), // Generated recommendation
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Project milestones for timeline planning
+export const projectMilestones = pgTable("project_milestones", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  sessionId: varchar("session_id").notNull().references(() => scopingSessions.id, { onDelete: "cascade" }),
+  phase: text("phase").notNull(), // e.g., "Planning", "POC", "Pilot", "Production Rollout"
+  phaseName: text("phase_name").notNull(),
+  startDate: timestamp("start_date"),
+  endDate: timestamp("end_date"),
+  owner: text("owner"), // Person/team responsible
+  status: text("status").notNull().default("not_started"), // not_started, in_progress, completed, blocked
+  percentComplete: integer("percent_complete").notNull().default(0),
+  notes: text("notes"),
+  sortOrder: integer("sort_order").notNull().default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => [
+  index("idx_milestones_session").on(table.sessionId, table.sortOrder),
+]);
+
+// Tasks within project milestones
+export const milestoneTasks = pgTable("milestone_tasks", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  milestoneId: varchar("milestone_id").notNull().references(() => projectMilestones.id, { onDelete: "cascade" }),
+  taskName: text("task_name").notNull(),
+  taskDescription: text("task_description"),
+  assignee: text("assignee"),
+  status: text("status").notNull().default("pending"), // pending, in_progress, completed
+  dueDate: timestamp("due_date"),
+  completedDate: timestamp("completed_date"),
+  sortOrder: integer("sort_order").notNull().default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => [
+  index("idx_milestone_tasks").on(table.milestoneId, table.sortOrder),
+]);
+
 // ============================================================================
 // RELATIONS
 // ============================================================================
 
 export const usersRelations = relations(users, ({ many }) => ({
   customerProfiles: many(customerProfiles),
+  optionCatalogs: many(optionCatalogs),
 }));
 
 export const customerProfilesRelations = relations(customerProfiles, ({ one, many }) => ({
@@ -141,6 +250,8 @@ export const scopingSessionsRelations = relations(scopingSessions, ({ one, many 
   }),
   responses: many(questionnaireResponses),
   checklists: many(deploymentChecklists),
+  nacAssessment: one(nacAssessments),
+  milestones: many(projectMilestones),
 }));
 
 export const questionnaireResponsesRelations = relations(questionnaireResponses, ({ one }) => ({
@@ -154,6 +265,54 @@ export const deploymentChecklistsRelations = relations(deploymentChecklists, ({ 
   session: one(scopingSessions, {
     fields: [deploymentChecklists.sessionId],
     references: [scopingSessions.id],
+  }),
+}));
+
+export const checklistTemplatesRelations = relations(checklistTemplates, ({ many }) => ({
+  items: many(checklistItemsTemplate),
+}));
+
+export const checklistItemsTemplateRelations = relations(checklistItemsTemplate, ({ one }) => ({
+  template: one(checklistTemplates, {
+    fields: [checklistItemsTemplate.templateId],
+    references: [checklistTemplates.id],
+  }),
+}));
+
+export const optionCatalogsRelations = relations(optionCatalogs, ({ one, many }) => ({
+  user: one(users, {
+    fields: [optionCatalogs.userId],
+    references: [users.id],
+  }),
+  values: many(optionValues),
+}));
+
+export const optionValuesRelations = relations(optionValues, ({ one }) => ({
+  catalog: one(optionCatalogs, {
+    fields: [optionValues.catalogId],
+    references: [optionCatalogs.id],
+  }),
+}));
+
+export const nacAssessmentsRelations = relations(nacAssessments, ({ one }) => ({
+  session: one(scopingSessions, {
+    fields: [nacAssessments.sessionId],
+    references: [scopingSessions.id],
+  }),
+}));
+
+export const projectMilestonesRelations = relations(projectMilestones, ({ one, many }) => ({
+  session: one(scopingSessions, {
+    fields: [projectMilestones.sessionId],
+    references: [scopingSessions.id],
+  }),
+  tasks: many(milestoneTasks),
+}));
+
+export const milestoneTasksRelations = relations(milestoneTasks, ({ one }) => ({
+  milestone: one(projectMilestones, {
+    fields: [milestoneTasks.milestoneId],
+    references: [projectMilestones.id],
   }),
 }));
 
@@ -213,3 +372,64 @@ export const insertAppSettingSchema = createInsertSchema(appSettings).omit({
 });
 export type InsertAppSetting = z.infer<typeof insertAppSettingSchema>;
 export type AppSetting = typeof appSettings.$inferSelect;
+
+// Checklist Template
+export const insertChecklistTemplateSchema = createInsertSchema(checklistTemplates).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export type InsertChecklistTemplate = z.infer<typeof insertChecklistTemplateSchema>;
+export type ChecklistTemplate = typeof checklistTemplates.$inferSelect;
+
+// Checklist Item Template
+export const insertChecklistItemTemplateSchema = createInsertSchema(checklistItemsTemplate).omit({
+  id: true,
+  createdAt: true,
+});
+export type InsertChecklistItemTemplate = z.infer<typeof insertChecklistItemTemplateSchema>;
+export type ChecklistItemTemplate = typeof checklistItemsTemplate.$inferSelect;
+
+// Option Catalog
+export const insertOptionCatalogSchema = createInsertSchema(optionCatalogs).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export type InsertOptionCatalog = z.infer<typeof insertOptionCatalogSchema>;
+export type OptionCatalog = typeof optionCatalogs.$inferSelect;
+
+// Option Value
+export const insertOptionValueSchema = createInsertSchema(optionValues).omit({
+  id: true,
+  createdAt: true,
+});
+export type InsertOptionValue = z.infer<typeof insertOptionValueSchema>;
+export type OptionValue = typeof optionValues.$inferSelect;
+
+// NAC Assessment
+export const insertNacAssessmentSchema = createInsertSchema(nacAssessments).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export type InsertNacAssessment = z.infer<typeof insertNacAssessmentSchema>;
+export type NacAssessment = typeof nacAssessments.$inferSelect;
+
+// Project Milestone
+export const insertProjectMilestoneSchema = createInsertSchema(projectMilestones).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export type InsertProjectMilestone = z.infer<typeof insertProjectMilestoneSchema>;
+export type ProjectMilestone = typeof projectMilestones.$inferSelect;
+
+// Milestone Task
+export const insertMilestoneTaskSchema = createInsertSchema(milestoneTasks).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export type InsertMilestoneTask = z.infer<typeof insertMilestoneTaskSchema>;
+export type MilestoneTask = typeof milestoneTasks.$inferSelect;
