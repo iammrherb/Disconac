@@ -8,7 +8,14 @@ import {
   insertScopingSessionSchema,
   insertQuestionnaireResponseSchema,
   insertDocumentationLinkSchema,
-  insertDeploymentChecklistSchema 
+  insertDeploymentChecklistSchema,
+  insertChecklistTemplateSchema,
+  insertChecklistItemTemplateSchema,
+  insertOptionCatalogSchema,
+  insertOptionValueSchema,
+  insertNacAssessmentSchema,
+  insertProjectMilestoneSchema,
+  insertMilestoneTaskSchema
 } from "@shared/schema";
 
 // Temporary test user ID (no authentication)
@@ -670,6 +677,416 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error getting documentation recommendations:", error);
       res.status(500).json({ message: "Failed to get recommendations" });
+    }
+  });
+
+  // ========== Checklist Template Routes ==========
+  
+  app.get('/api/templates', async (req: any, res) => {
+    try {
+      const templates = await storage.getAllTemplates();
+      res.json(templates);
+    } catch (error) {
+      console.error("Error fetching templates:", error);
+      res.status(500).json({ message: "Failed to fetch templates" });
+    }
+  });
+
+  app.get('/api/templates/:id', async (req: any, res) => {
+    try {
+      const template = await storage.getTemplate(req.params.id);
+      if (!template) {
+        return res.status(404).json({ message: "Template not found" });
+      }
+      res.json(template);
+    } catch (error) {
+      console.error("Error fetching template:", error);
+      res.status(500).json({ message: "Failed to fetch template" });
+    }
+  });
+
+  app.post('/api/templates', async (req: any, res) => {
+    try {
+      const validated = insertChecklistTemplateSchema.parse(req.body);
+      const template = await storage.createTemplate(validated);
+      res.status(201).json(template);
+    } catch (error) {
+      console.error("Error creating template:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Validation error", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to create template" });
+    }
+  });
+
+  app.put('/api/templates/:id', async (req: any, res) => {
+    try {
+      const validated = insertChecklistTemplateSchema.partial().parse(req.body);
+      const template = await storage.updateTemplate(req.params.id, validated);
+      if (!template) {
+        return res.status(404).json({ message: "Template not found" });
+      }
+      res.json(template);
+    } catch (error) {
+      console.error("Error updating template:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Validation error", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to update template" });
+    }
+  });
+
+  app.delete('/api/templates/:id', async (req: any, res) => {
+    try {
+      await storage.deleteTemplate(req.params.id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting template:", error);
+      res.status(500).json({ message: "Failed to delete template" });
+    }
+  });
+
+  // ========== Template Items Routes ==========
+  
+  app.get('/api/templates/:templateId/items', async (req: any, res) => {
+    try {
+      const items = await storage.getTemplateItems(req.params.templateId);
+      res.json(items);
+    } catch (error) {
+      console.error("Error fetching template items:", error);
+      res.status(500).json({ message: "Failed to fetch template items" });
+    }
+  });
+
+  app.post('/api/templates/:templateId/items', async (req: any, res) => {
+    try {
+      const validated = insertChecklistItemTemplateSchema.parse({
+        ...req.body,
+        templateId: req.params.templateId
+      });
+      const item = await storage.createTemplateItem(validated);
+      res.status(201).json(item);
+    } catch (error) {
+      console.error("Error creating template item:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Validation error", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to create template item" });
+    }
+  });
+
+  app.put('/api/template-items/:id', async (req: any, res) => {
+    try {
+      const validated = insertChecklistItemTemplateSchema.partial().parse(req.body);
+      const item = await storage.updateTemplateItem(req.params.id, validated);
+      if (!item) {
+        return res.status(404).json({ message: "Template item not found" });
+      }
+      res.json(item);
+    } catch (error) {
+      console.error("Error updating template item:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Validation error", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to update template item" });
+    }
+  });
+
+  app.delete('/api/template-items/:id', async (req: any, res) => {
+    try {
+      await storage.deleteTemplateItem(req.params.id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting template item:", error);
+      res.status(500).json({ message: "Failed to delete template item" });
+    }
+  });
+
+  // ========== Option Catalog Routes ==========
+  
+  app.get('/api/catalogs', async (req: any, res) => {
+    try {
+      const userId = TEST_USER_ID;
+      const catalogs = await storage.getUserCatalogs(userId);
+      res.json(catalogs);
+    } catch (error) {
+      console.error("Error fetching catalogs:", error);
+      res.status(500).json({ message: "Failed to fetch catalogs" });
+    }
+  });
+
+  app.get('/api/catalogs/:id', async (req: any, res) => {
+    try {
+      const catalog = await storage.getCatalog(req.params.id);
+      if (!catalog) {
+        return res.status(404).json({ message: "Catalog not found" });
+      }
+      res.json(catalog);
+    } catch (error) {
+      console.error("Error fetching catalog:", error);
+      res.status(500).json({ message: "Failed to fetch catalog" });
+    }
+  });
+
+  app.post('/api/catalogs', async (req: any, res) => {
+    try {
+      const userId = TEST_USER_ID;
+      const validated = insertOptionCatalogSchema.parse({
+        ...req.body,
+        userId
+      });
+      const catalog = await storage.createCatalog(validated);
+      res.status(201).json(catalog);
+    } catch (error) {
+      console.error("Error creating catalog:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Validation error", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to create catalog" });
+    }
+  });
+
+  app.put('/api/catalogs/:id', async (req: any, res) => {
+    try {
+      const validated = insertOptionCatalogSchema.partial().parse(req.body);
+      const catalog = await storage.updateCatalog(req.params.id, validated);
+      if (!catalog) {
+        return res.status(404).json({ message: "Catalog not found" });
+      }
+      res.json(catalog);
+    } catch (error) {
+      console.error("Error updating catalog:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Validation error", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to update catalog" });
+    }
+  });
+
+  app.delete('/api/catalogs/:id', async (req: any, res) => {
+    try {
+      await storage.deleteCatalog(req.params.id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting catalog:", error);
+      res.status(500).json({ message: "Failed to delete catalog" });
+    }
+  });
+
+  // ========== Option Value Routes ==========
+  
+  app.get('/api/catalogs/:catalogId/values', async (req: any, res) => {
+    try {
+      const values = await storage.getCatalogValues(req.params.catalogId);
+      res.json(values);
+    } catch (error) {
+      console.error("Error fetching catalog values:", error);
+      res.status(500).json({ message: "Failed to fetch catalog values" });
+    }
+  });
+
+  app.post('/api/catalogs/:catalogId/values', async (req: any, res) => {
+    try {
+      const validated = insertOptionValueSchema.parse({
+        ...req.body,
+        catalogId: req.params.catalogId
+      });
+      const value = await storage.createCatalogValue(validated);
+      res.status(201).json(value);
+    } catch (error) {
+      console.error("Error creating catalog value:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Validation error", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to create catalog value" });
+    }
+  });
+
+  app.put('/api/catalog-values/:id', async (req: any, res) => {
+    try {
+      const validated = insertOptionValueSchema.partial().parse(req.body);
+      const value = await storage.updateCatalogValue(req.params.id, validated);
+      if (!value) {
+        return res.status(404).json({ message: "Catalog value not found" });
+      }
+      res.json(value);
+    } catch (error) {
+      console.error("Error updating catalog value:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Validation error", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to update catalog value" });
+    }
+  });
+
+  app.delete('/api/catalog-values/:id', async (req: any, res) => {
+    try {
+      await storage.deleteCatalogValue(req.params.id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting catalog value:", error);
+      res.status(500).json({ message: "Failed to delete catalog value" });
+    }
+  });
+
+  // ========== NAC Assessment Routes ==========
+  
+  app.get('/api/sessions/:sessionId/assessment', async (req: any, res) => {
+    try {
+      const assessment = await storage.getAssessmentBySessionId(req.params.sessionId);
+      if (!assessment) {
+        return res.status(404).json({ message: "Assessment not found" });
+      }
+      res.json(assessment);
+    } catch (error) {
+      console.error("Error fetching assessment:", error);
+      res.status(500).json({ message: "Failed to fetch assessment" });
+    }
+  });
+
+  app.post('/api/sessions/:sessionId/assessment', async (req: any, res) => {
+    try {
+      const validated = insertNacAssessmentSchema.parse({
+        ...req.body,
+        sessionId: req.params.sessionId
+      });
+      const assessment = await storage.createAssessment(validated);
+      res.status(201).json(assessment);
+    } catch (error) {
+      console.error("Error creating assessment:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Validation error", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to create assessment" });
+    }
+  });
+
+  app.put('/api/assessments/:id', async (req: any, res) => {
+    try {
+      const validated = insertNacAssessmentSchema.partial().parse(req.body);
+      const assessment = await storage.updateAssessment(req.params.id, validated);
+      if (!assessment) {
+        return res.status(404).json({ message: "Assessment not found" });
+      }
+      res.json(assessment);
+    } catch (error) {
+      console.error("Error updating assessment:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Validation error", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to update assessment" });
+    }
+  });
+
+  // ========== Project Milestone Routes ==========
+  
+  app.get('/api/sessions/:sessionId/milestones', async (req: any, res) => {
+    try {
+      const milestones = await storage.getMilestonesBySessionId(req.params.sessionId);
+      res.json(milestones);
+    } catch (error) {
+      console.error("Error fetching milestones:", error);
+      res.status(500).json({ message: "Failed to fetch milestones" });
+    }
+  });
+
+  app.post('/api/sessions/:sessionId/milestones', async (req: any, res) => {
+    try {
+      const validated = insertProjectMilestoneSchema.parse({
+        ...req.body,
+        sessionId: req.params.sessionId
+      });
+      const milestone = await storage.createMilestone(validated);
+      res.status(201).json(milestone);
+    } catch (error) {
+      console.error("Error creating milestone:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Validation error", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to create milestone" });
+    }
+  });
+
+  app.put('/api/milestones/:id', async (req: any, res) => {
+    try {
+      const validated = insertProjectMilestoneSchema.partial().parse(req.body);
+      const milestone = await storage.updateMilestone(req.params.id, validated);
+      if (!milestone) {
+        return res.status(404).json({ message: "Milestone not found" });
+      }
+      res.json(milestone);
+    } catch (error) {
+      console.error("Error updating milestone:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Validation error", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to update milestone" });
+    }
+  });
+
+  app.delete('/api/milestones/:id', async (req: any, res) => {
+    try {
+      await storage.deleteMilestone(req.params.id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting milestone:", error);
+      res.status(500).json({ message: "Failed to delete milestone" });
+    }
+  });
+
+  // ========== Milestone Task Routes ==========
+  
+  app.get('/api/milestones/:milestoneId/tasks', async (req: any, res) => {
+    try {
+      const tasks = await storage.getTasksByMilestoneId(req.params.milestoneId);
+      res.json(tasks);
+    } catch (error) {
+      console.error("Error fetching tasks:", error);
+      res.status(500).json({ message: "Failed to fetch tasks" });
+    }
+  });
+
+  app.post('/api/milestones/:milestoneId/tasks', async (req: any, res) => {
+    try {
+      const validated = insertMilestoneTaskSchema.parse({
+        ...req.body,
+        milestoneId: req.params.milestoneId
+      });
+      const task = await storage.createMilestoneTask(validated);
+      res.status(201).json(task);
+    } catch (error) {
+      console.error("Error creating task:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Validation error", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to create task" });
+    }
+  });
+
+  app.put('/api/milestone-tasks/:id', async (req: any, res) => {
+    try {
+      const validated = insertMilestoneTaskSchema.partial().parse(req.body);
+      const task = await storage.updateMilestoneTask(req.params.id, validated);
+      if (!task) {
+        return res.status(404).json({ message: "Task not found" });
+      }
+      res.json(task);
+    } catch (error) {
+      console.error("Error updating task:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Validation error", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to update task" });
+    }
+  });
+
+  app.delete('/api/milestone-tasks/:id', async (req: any, res) => {
+    try {
+      await storage.deleteMilestoneTask(req.params.id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting task:", error);
+      res.status(500).json({ message: "Failed to delete task" });
     }
   });
 

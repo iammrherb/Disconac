@@ -7,6 +7,13 @@ import {
   documentationLinks,
   deploymentChecklists,
   appSettings,
+  checklistTemplates,
+  checklistItemsTemplate,
+  optionCatalogs,
+  optionValues,
+  nacAssessments,
+  projectMilestones,
+  milestoneTasks,
   type User,
   type UpsertUser,
   type CustomerProfile,
@@ -21,6 +28,20 @@ import {
   type InsertDeploymentChecklist,
   type AppSetting,
   type InsertAppSetting,
+  type ChecklistTemplate,
+  type InsertChecklistTemplate,
+  type ChecklistItemTemplate,
+  type InsertChecklistItemTemplate,
+  type OptionCatalog,
+  type InsertOptionCatalog,
+  type OptionValue,
+  type InsertOptionValue,
+  type NacAssessment,
+  type InsertNacAssessment,
+  type ProjectMilestone,
+  type InsertProjectMilestone,
+  type MilestoneTask,
+  type InsertMilestoneTask,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and } from "drizzle-orm";
@@ -72,6 +93,55 @@ export interface IStorage {
     completedSessions: number;
     draftSessions: number;
   }>;
+
+  // Checklist template operations
+  getAllTemplates(): Promise<ChecklistTemplate[]>;
+  getTemplate(id: string): Promise<ChecklistTemplate | undefined>;
+  createTemplate(template: Omit<InsertChecklistTemplate, "id">): Promise<ChecklistTemplate>;
+  updateTemplate(id: string, data: Partial<InsertChecklistTemplate>): Promise<ChecklistTemplate | undefined>;
+  deleteTemplate(id: string): Promise<void>;
+  
+  // Checklist template item operations
+  getTemplateItems(templateId: string): Promise<ChecklistItemTemplate[]>;
+  createTemplateItem(item: Omit<InsertChecklistItemTemplate, "id">): Promise<ChecklistItemTemplate>;
+  updateTemplateItem(id: string, data: Partial<InsertChecklistItemTemplate>): Promise<ChecklistItemTemplate | undefined>;
+  deleteTemplateItem(id: string): Promise<void>;
+  
+  // Option catalog operations
+  getUserCatalogs(userId: string): Promise<OptionCatalog[]>;
+  getCatalog(id: string): Promise<OptionCatalog | undefined>;
+  getCatalogByType(userId: string, catalogType: string): Promise<OptionCatalog | undefined>;
+  createCatalog(catalog: Omit<InsertOptionCatalog, "id">): Promise<OptionCatalog>;
+  updateCatalog(id: string, data: Partial<InsertOptionCatalog>): Promise<OptionCatalog | undefined>;
+  deleteCatalog(id: string): Promise<void>;
+  
+  // Option value operations
+  getCatalogValues(catalogId: string): Promise<OptionValue[]>;
+  createCatalogValue(value: Omit<InsertOptionValue, "id">): Promise<OptionValue>;
+  updateCatalogValue(id: string, data: Partial<InsertOptionValue>): Promise<OptionValue | undefined>;
+  deleteCatalogValue(id: string): Promise<void>;
+  
+  // NAC assessment operations
+  getAssessmentBySessionId(sessionId: string): Promise<NacAssessment | undefined>;
+  createAssessment(assessment: Omit<InsertNacAssessment, "id">): Promise<NacAssessment>;
+  updateAssessment(id: string, data: Partial<InsertNacAssessment>): Promise<NacAssessment | undefined>;
+  
+  // Project milestone operations
+  getMilestonesBySessionId(sessionId: string): Promise<ProjectMilestone[]>;
+  createMilestone(milestone: Omit<InsertProjectMilestone, "id">): Promise<ProjectMilestone>;
+  updateMilestone(id: string, data: Partial<InsertProjectMilestone>): Promise<ProjectMilestone | undefined>;
+  deleteMilestone(id: string): Promise<void>;
+  
+  // Milestone task operations
+  getTasksByMilestoneId(milestoneId: string): Promise<MilestoneTask[]>;
+  createMilestoneTask(task: Omit<InsertMilestoneTask, "id">): Promise<MilestoneTask>;
+  updateMilestoneTask(id: string, data: Partial<InsertMilestoneTask>): Promise<MilestoneTask | undefined>;
+  deleteMilestoneTask(id: string): Promise<void>;
+
+  // Settings operations
+  getSetting(key: string): Promise<AppSetting | undefined>;
+  upsertSetting(key: string, value: string): Promise<AppSetting>;
+  deleteSetting(key: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -403,8 +473,246 @@ export class DatabaseStorage implements IStorage {
     return setting;
   }
 
+  async upsertSetting(key: string, value: string): Promise<AppSetting> {
+    const [setting] = await db
+      .insert(appSettings)
+      .values({ key, value })
+      .onConflictDoUpdate({
+        target: appSettings.key,
+        set: { value, updatedAt: new Date() },
+      })
+      .returning();
+    return setting;
+  }
+
   async deleteSetting(key: string): Promise<void> {
     await db.delete(appSettings).where(eq(appSettings.key, key));
+  }
+
+  // ========== Checklist Template Operations ==========
+  
+  async getAllTemplates(): Promise<ChecklistTemplate[]> {
+    return await db.select().from(checklistTemplates);
+  }
+
+  async getTemplate(id: string): Promise<ChecklistTemplate | undefined> {
+    const [template] = await db.select()
+      .from(checklistTemplates)
+      .where(eq(checklistTemplates.id, id));
+    return template;
+  }
+
+  async createTemplate(template: Omit<InsertChecklistTemplate, "id">): Promise<ChecklistTemplate> {
+    const [newTemplate] = await db
+      .insert(checklistTemplates)
+      .values(template)
+      .returning();
+    return newTemplate;
+  }
+
+  async updateTemplate(id: string, data: Partial<InsertChecklistTemplate>): Promise<ChecklistTemplate | undefined> {
+    const [updated] = await db
+      .update(checklistTemplates)
+      .set(data)
+      .where(eq(checklistTemplates.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteTemplate(id: string): Promise<void> {
+    await db.delete(checklistTemplates).where(eq(checklistTemplates.id, id));
+  }
+
+  // ========== Checklist Template Item Operations ==========
+  
+  async getTemplateItems(templateId: string): Promise<ChecklistItemTemplate[]> {
+    return await db.select()
+      .from(checklistItemsTemplate)
+      .where(eq(checklistItemsTemplate.templateId, templateId))
+      .orderBy(checklistItemsTemplate.sortOrder);
+  }
+
+  async createTemplateItem(item: Omit<InsertChecklistItemTemplate, "id">): Promise<ChecklistItemTemplate> {
+    const [newItem] = await db
+      .insert(checklistItemsTemplate)
+      .values(item)
+      .returning();
+    return newItem;
+  }
+
+  async updateTemplateItem(id: string, data: Partial<InsertChecklistItemTemplate>): Promise<ChecklistItemTemplate | undefined> {
+    const [updated] = await db
+      .update(checklistItemsTemplate)
+      .set(data)
+      .where(eq(checklistItemsTemplate.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteTemplateItem(id: string): Promise<void> {
+    await db.delete(checklistItemsTemplate).where(eq(checklistItemsTemplate.id, id));
+  }
+
+  // ========== Option Catalog Operations ==========
+  
+  async getUserCatalogs(userId: string): Promise<OptionCatalog[]> {
+    return await db.select()
+      .from(optionCatalogs)
+      .where(eq(optionCatalogs.userId, userId));
+  }
+
+  async getCatalog(id: string): Promise<OptionCatalog | undefined> {
+    const [catalog] = await db.select()
+      .from(optionCatalogs)
+      .where(eq(optionCatalogs.id, id));
+    return catalog;
+  }
+
+  async getCatalogByType(userId: string, catalogType: string): Promise<OptionCatalog | undefined> {
+    const [catalog] = await db.select()
+      .from(optionCatalogs)
+      .where(and(
+        eq(optionCatalogs.userId, userId),
+        eq(optionCatalogs.type, catalogType)
+      ));
+    return catalog;
+  }
+
+  async createCatalog(catalog: Omit<InsertOptionCatalog, "id">): Promise<OptionCatalog> {
+    const [newCatalog] = await db
+      .insert(optionCatalogs)
+      .values(catalog)
+      .returning();
+    return newCatalog;
+  }
+
+  async updateCatalog(id: string, data: Partial<InsertOptionCatalog>): Promise<OptionCatalog | undefined> {
+    const [updated] = await db
+      .update(optionCatalogs)
+      .set(data)
+      .where(eq(optionCatalogs.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteCatalog(id: string): Promise<void> {
+    await db.delete(optionCatalogs).where(eq(optionCatalogs.id, id));
+  }
+
+  // ========== Option Value Operations ==========
+  
+  async getCatalogValues(catalogId: string): Promise<OptionValue[]> {
+    return await db.select()
+      .from(optionValues)
+      .where(eq(optionValues.catalogId, catalogId))
+      .orderBy(optionValues.sortOrder);
+  }
+
+  async createCatalogValue(value: Omit<InsertOptionValue, "id">): Promise<OptionValue> {
+    const [newValue] = await db
+      .insert(optionValues)
+      .values(value)
+      .returning();
+    return newValue;
+  }
+
+  async updateCatalogValue(id: string, data: Partial<InsertOptionValue>): Promise<OptionValue | undefined> {
+    const [updated] = await db
+      .update(optionValues)
+      .set(data)
+      .where(eq(optionValues.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteCatalogValue(id: string): Promise<void> {
+    await db.delete(optionValues).where(eq(optionValues.id, id));
+  }
+
+  // ========== NAC Assessment Operations ==========
+  
+  async getAssessmentBySessionId(sessionId: string): Promise<NacAssessment | undefined> {
+    const [assessment] = await db.select()
+      .from(nacAssessments)
+      .where(eq(nacAssessments.sessionId, sessionId));
+    return assessment;
+  }
+
+  async createAssessment(assessment: Omit<InsertNacAssessment, "id">): Promise<NacAssessment> {
+    const [newAssessment] = await db
+      .insert(nacAssessments)
+      .values(assessment)
+      .returning();
+    return newAssessment;
+  }
+
+  async updateAssessment(id: string, data: Partial<InsertNacAssessment>): Promise<NacAssessment | undefined> {
+    const [updated] = await db
+      .update(nacAssessments)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(nacAssessments.id, id))
+      .returning();
+    return updated;
+  }
+
+  // ========== Project Milestone Operations ==========
+  
+  async getMilestonesBySessionId(sessionId: string): Promise<ProjectMilestone[]> {
+    return await db.select()
+      .from(projectMilestones)
+      .where(eq(projectMilestones.sessionId, sessionId))
+      .orderBy(projectMilestones.sortOrder);
+  }
+
+  async createMilestone(milestone: Omit<InsertProjectMilestone, "id">): Promise<ProjectMilestone> {
+    const [newMilestone] = await db
+      .insert(projectMilestones)
+      .values(milestone)
+      .returning();
+    return newMilestone;
+  }
+
+  async updateMilestone(id: string, data: Partial<InsertProjectMilestone>): Promise<ProjectMilestone | undefined> {
+    const [updated] = await db
+      .update(projectMilestones)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(projectMilestones.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteMilestone(id: string): Promise<void> {
+    await db.delete(projectMilestones).where(eq(projectMilestones.id, id));
+  }
+
+  // ========== Milestone Task Operations ==========
+  
+  async getTasksByMilestoneId(milestoneId: string): Promise<MilestoneTask[]> {
+    return await db.select()
+      .from(milestoneTasks)
+      .where(eq(milestoneTasks.milestoneId, milestoneId))
+      .orderBy(milestoneTasks.sortOrder);
+  }
+
+  async createMilestoneTask(task: Omit<InsertMilestoneTask, "id">): Promise<MilestoneTask> {
+    const [newTask] = await db
+      .insert(milestoneTasks)
+      .values(task)
+      .returning();
+    return newTask;
+  }
+
+  async updateMilestoneTask(id: string, data: Partial<InsertMilestoneTask>): Promise<MilestoneTask | undefined> {
+    const [updated] = await db
+      .update(milestoneTasks)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(milestoneTasks.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteMilestoneTask(id: string): Promise<void> {
+    await db.delete(milestoneTasks).where(eq(milestoneTasks.id, id));
   }
 }
 

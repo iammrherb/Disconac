@@ -26,9 +26,20 @@ The tool features a questionnaire-based scoping workflow that collects informati
 - All mutations properly invalidate React Query cache
 - Comprehensive error handling with toast notifications
 
-**Database Schema Updates:**
-- Added `app_settings` table with key-value pairs for application configuration
-- Schema includes: id (uuid), key (unique varchar), value (text), created_at, updated_at
+**Database Schema Extensions (October 13, 2025):**
+- Added 8 new tables for advanced features:
+  - `checklist_templates` - Reusable checklist templates with phases
+  - `checklist_items_template` - Template items with best practices and prerequisites
+  - `option_catalogs` - User-defined option sets (vendors, types, categories)
+  - `option_values` - Values within option catalogs with metadata
+  - `nac_assessments` - NAC vendor migration assessments with recommendations
+  - `migration_recommendations` - Actionable migration steps and timelines
+  - `project_milestones` - Deployment phase planning with dates and ownership
+  - `milestone_tasks` - Tasks within milestones with status tracking
+  - `app_settings` - Application configuration (API keys, settings)
+- Added composite indexes on (FK, sortOrder) for optimal ordered retrieval
+- Implemented full Drizzle relations for all tables enabling FK navigation
+- All tables include proper insert/select schemas for validation
 
 **API Endpoints Added:**
 - POST /api/documentation - Create new documentation entry
@@ -38,6 +49,14 @@ The tool features a questionnaire-based scoping workflow that collects informati
 - GET /api/documentation/duplicates - Find duplicate URLs
 - GET /api/settings/:key - Retrieve setting value
 - PUT /api/settings/:key - Update setting value
+
+**Advanced Features API (October 13, 2025):**
+- Checklist Templates: GET/POST/PUT/DELETE /api/templates, GET/POST/PUT/DELETE /api/templates/:templateId/items
+- Option Catalogs: GET/POST/PUT/DELETE /api/catalogs, GET/POST/PUT/DELETE /api/catalogs/:catalogId/values
+- NAC Assessments: GET/POST/PUT /api/sessions/:sessionId/assessment
+- Project Milestones: GET/POST/PUT/DELETE /api/sessions/:sessionId/milestones
+- Milestone Tasks: GET/POST/PUT/DELETE /api/milestones/:milestoneId/tasks
+- All endpoints include Zod validation with `.partial()` for updates, proper error handling, and consistent status codes
 
 **Customer Profile Enforcement (Completed):**
 - Implemented mandatory customer profile creation/selection before scoping sessions
