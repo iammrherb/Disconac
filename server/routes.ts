@@ -310,10 +310,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Convert responses object to array format for storage
-      const responseArray = Object.entries(responses).map(([questionId, answer]) => ({
-        questionId,
-        answer: typeof answer === 'string' ? answer : JSON.stringify(answer),
-      }));
+      // Field IDs are typically in format: category-fieldName or just fieldName
+      const responseArray = Object.entries(responses).map(([questionId, answer]) => {
+        // Parse category from questionId if it contains a dash
+        const parts = questionId.split('-');
+        const category = parts.length > 1 ? parts[0] : 'general';
+        const question = parts.length > 1 ? parts.slice(1).join(' ') : questionId;
+        
+        // Determine response type based on answer format
+        let responseType = 'text';
+        if (Array.isArray(answer)) {
+          responseType = 'multiselect';
+        } else if (typeof answer === 'number') {
+          responseType = 'number';
+        } else if (typeof answer === 'boolean') {
+          responseType = 'checkbox';
+        }
+        
+        return {
+          category,
+          question,
+          responseType,
+          response: answer as any, // Cast to Json type - answer can be string, number, boolean, array, or object
+        };
+      });
       
       await storage.bulkUpsertResponses(req.params.id, responseArray);
       

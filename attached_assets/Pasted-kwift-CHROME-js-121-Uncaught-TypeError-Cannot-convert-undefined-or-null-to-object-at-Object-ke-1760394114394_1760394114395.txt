@@ -1,0 +1,161 @@
+kwift.CHROME.js:121 Uncaught TypeError: Cannot convert undefined or null to object
+    at Object.keys (<anonymous>)
+    at Object.isLoginFormAutofilledByDashlane (kwift.CHROME.js:121:44040)
+    at fn (kwift.CHROME.js:121:52288)
+    at Object.debouncedTriggerDataCaptureForForm (kwift.CHROME.js:1:384029)
+    at Object.triggerDataCaptureForForm (kwift.CHROME.js:121:44387)
+    at HTMLButtonElement.buttonClickHandler (kwift.CHROME.js:121:53875)
+api/sessions/1e145faa-9853-4ccc-a54b-9850cf1f079c/responses:1  Failed to load resource: the server responded with a status of 500 ()
+api/sessions/1e145faa-9853-4ccc-a54b-9850cf1f079c/responses:1  Failed to load resource: the server responded with a status of 500 ()
+content.js:10 Uncaught Error: Extension context invalidated.
+    at o (content.js:10:5711)
+    at content.js:10:5622
+content.js:10 Uncaught Error: Extension context invalidated.
+    at o (content.js:10:5711)
+    at content.js:10:5622
+content.js:10 Uncaught Error: Extension context invalidated.
+    at o (content.js:10:5711)
+    at content.js:10:5622
+content.js:10 Uncaught Error: Extension context invalidated.
+    at o (content.js:10:5711)
+    at content.js:10:5622
+content.js:10 Uncaught Error: Extension context invalidated.
+    at o (content.js:10:5711)
+    at content.js:10:5622
+content.js:10 Uncaught Error: Extension context invalidated.
+    at o (content.js:10:5711)
+    at content.js:10:5622
+content.js:10 Uncaught Error: Extension context invalidated.
+    at o (content.js:10:5711)
+    at content.js:10:5622
+content.js:10 Uncaught Error: Extension context invalidated.
+    at o (content.js:10:5711)
+    at content.js:10:5622
+content.js:10 Uncaught Error: Extension context invalidated.
+    at o (content.js:10:5711)
+    at content.js:10:5622
+o @ content.js:10
+(anonymous) @ content.js:10
+setTimeout
+n @ content.js:10
+(anonymous) @ content.js:10
+setTimeout
+s @ content.js:10
+content.js:10 Uncaught Error: Extension context invalidated.
+    at o (content.js:10:5711)
+    at content.js:10:5622
+o @ content.js:10
+(anonymous) @ content.js:10
+setTimeout
+n @ content.js:10
+(anonymous) @ content.js:10
+setTimeout
+s @ content.js:10
+content.js:10 Uncaught Error: Extension context invalidated.
+    at o (content.js:10:5711)
+    at content.js:10:5622
+o @ content.js:10
+(anonymous) @ content.js:10
+setTimeout
+n @ content.js:10
+(anonymous) @ content.js:10
+setTimeout
+s @ content.js:10
+content.js:10 Uncaught Error: Extension context invalidated.
+    at o (content.js:10:5711)
+    at content.js:10:5622
+o @ content.js:10
+(anonymous) @ content.js:10
+setTimeout
+n @ content.js:10
+(anonymous) @ content.js:10
+setTimeout
+s @ content.js:10
+content.js:10 Uncaught Error: Extension context invalidated.
+    at o (content.js:10:5711)
+    at content.js:10:5622
+o @ content.js:10
+(anonymous) @ content.js:10
+setTimeout
+n @ content.js:10
+(anonymous) @ content.js:10
+setTimeout
+s @ content.js:10
+content.js:10 Uncaught Error: Extension context invalidated.
+    at o (content.js:10:5711)
+    at content.js:10:5622
+o @ content.js:10
+(anonymous) @ content.js:10
+setTimeout
+n @ content.js:10
+(anonymous) @ content.js:10
+setTimeout
+s @ content.js:10
+content.js:10 Uncaught Error: Extension context invalidated.
+    at o (content.js:10:5711)
+    at content.js:10:5622
+o @ content.js:10
+(anonymous) @ content.js:10
+setTimeout
+n @ content.js:10
+(anonymous) @ content.js:10
+setTimeout
+s @ content.js:10
+host-network-events.js:1  PUT https://scopeappx.replit.app/api/sessions/1e145faa-9853-4ccc-a54b-9850cf1f079c/responses 500 (Internal Server Error)
+window.fetch @ host-network-events.js:1
+await in window.fetch
+kt @ index-CKyAgnSg.js:48
+mutationFn @ index-CKyAgnSg.js:284
+fn @ index-CKyAgnSg.js:48
+S @ index-CKyAgnSg.js:48
+start @ index-CKyAgnSg.js:48
+execute @ index-CKyAgnSg.js:48
+await in execute
+mutate @ index-CKyAgnSg.js:48
+(anonymous) @ index-CKyAgnSg.js:48
+g @ index-CKyAgnSg.js:284
+fS @ index-CKyAgnSg.js:37
+hS @ index-CKyAgnSg.js:37
+mS @ index-CKyAgnSg.js:37
+Np @ index-CKyAgnSg.js:37
+bg @ index-CKyAgnSg.js:37
+(anonymous) @ index-CKyAgnSg.js:37
+Ud @ index-CKyAgnSg.js:40
+Gm @ index-CKyAgnSg.js:37
+tc @ index-CKyAgnSg.js:37
+gd @ index-CKyAgnSg.js:37
+RS @ index-CKyAgnSg.js:37
+content.js:10 Uncaught Error: Extension context invalidated.
+    at o (content.js:10:5711)
+    at content.js:10:5622
+o @ content.js:10
+(anonymous) @ content.js:10
+setTimeout
+n @ content.js:10
+(anonymous) @ content.js:10
+setTimeout
+s @ content.js:10
+host-network-events.js:1  PUT https://scopeappx.replit.app/api/sessions/1e145faa-9853-4ccc-a54b-9850cf1f079c/responses 500 (Internal Server Error)
+window.fetch @ host-network-events.js:1
+await in window.fetch
+kt @ index-CKyAgnSg.js:48
+mutationFn @ index-CKyAgnSg.js:284
+fn @ index-CKyAgnSg.js:48
+S @ index-CKyAgnSg.js:48
+start @ index-CKyAgnSg.js:48
+execute @ index-CKyAgnSg.js:48
+await in execute
+mutate @ index-CKyAgnSg.js:48
+(anonymous) @ index-CKyAgnSg.js:48
+g @ index-CKyAgnSg.js:284
+fS @ index-CKyAgnSg.js:37
+hS @ index-CKyAgnSg.js:37
+mS @ index-CKyAgnSg.js:37
+Np @ index-CKyAgnSg.js:37
+bg @ index-CKyAgnSg.js:37
+(anonymous) @ index-CKyAgnSg.js:37
+Ud @ index-CKyAgnSg.js:40
+Gm @ index-CKyAgnSg.js:37
+tc @ index-CKyAgnSg.js:37
+gd @ index-CKyAgnSg.js:37
+RS @ index-CKyAgnSg.js:37
