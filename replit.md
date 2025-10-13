@@ -8,6 +8,37 @@ The tool features a questionnaire-based scoping workflow that collects informati
 
 ## Recent Changes (October 2025)
 
+**Documentation Management System (October 13, 2025):**
+- Implemented complete CRUD operations for documentation (Create, Read, Update, Delete)
+- Added Firecrawl API integration for automated web scraping and content import
+- Created settings page for API key management (Firecrawl API configuration)
+- Built duplicate detection system with endpoint GET /api/documentation/duplicates
+- Enhanced documentation page UI with:
+  - Create dialog with form validation (URL, title, content, category, tags)
+  - Edit dialog with pre-populated data
+  - Delete confirmation with AlertDialog
+  - Crawl URL dialog for Firecrawl integration
+  - View duplicates dialog showing URLs with multiple entries
+  - Search functionality across all fields
+  - Tag management with comma-separated input
+- Created app_settings table for storing API keys and configuration
+- Added upsert logic to handle duplicate URL conflicts gracefully
+- All mutations properly invalidate React Query cache
+- Comprehensive error handling with toast notifications
+
+**Database Schema Updates:**
+- Added `app_settings` table with key-value pairs for application configuration
+- Schema includes: id (uuid), key (unique varchar), value (text), created_at, updated_at
+
+**API Endpoints Added:**
+- POST /api/documentation - Create new documentation entry
+- PUT /api/documentation/:id - Update existing documentation
+- DELETE /api/documentation/:id - Delete documentation entry
+- POST /api/documentation/crawl - Scrape URL using Firecrawl API
+- GET /api/documentation/duplicates - Find duplicate URLs
+- GET /api/settings/:key - Retrieve setting value
+- PUT /api/settings/:key - Update setting value
+
 **Customer Profile Enforcement (Completed):**
 - Implemented mandatory customer profile creation/selection before scoping sessions
 - Created CustomerSelectionDialog component with tabs for "Select Existing" and "Create New" customer
@@ -22,14 +53,14 @@ The tool features a questionnaire-based scoping workflow that collects informati
 - Configuration-driven architecture using questionnaireConfig.ts with SectionRenderer component
 
 **Bug Fixes (Completed):**
+- Fixed 500 error on customer creation by ensuring test user exists in database
 - Fixed infinite 400 validation error loop by making userId optional in insertCustomerProfileSchema
 - Added loop prevention guard in scoping session creation
 - Fixed Select component value type issues (null to undefined conversion)
 
 **Remaining Tasks:**
-- Documentation management features (duplicate detection, refresh, external import)
-- Checklist validation before export (verify links and completeness)
 - PDF/Word export functionality for deployment checklists
+- Periodic documentation refresh scheduling
 
 ## User Preferences
 
