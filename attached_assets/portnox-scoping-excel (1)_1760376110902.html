@@ -1,0 +1,1598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portnox Scoping Checklist</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #00a4e4 0%, #0073a3 100%);
+            color: white;
+            padding: 30px 40px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 500px;
+            height: 500px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 50%;
+        }
+        
+        .header-content {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 30px;
+        }
+        
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+        }
+        
+        .portnox-logo {
+            background: white;
+            padding: 12px 20px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .portnox-logo img {
+            height: 40px;
+            width: auto;
+            display: block;
+        }
+        
+        .header-text h1 {
+            font-size: 2.5em;
+            font-weight: 300;
+            letter-spacing: -0.5px;
+            margin-bottom: 5px;
+        }
+        
+        .header-text .subtitle {
+            font-size: 1.1em;
+            opacity: 0.95;
+        }
+        
+        .header-meta {
+            text-align: right;
+        }
+        
+        .header-meta .date {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+        
+        .header-meta .version {
+            font-size: 1.1em;
+            font-weight: 500;
+            margin-top: 5px;
+        }
+        
+        .action-bar {
+            background: #f8fafc;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e5e7eb;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .company-info {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .company-info input {
+            padding: 10px 15px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 14px;
+            min-width: 200px;
+            transition: all 0.3s ease;
+        }
+        
+        .company-info input:focus {
+            outline: none;
+            border-color: #00a4e4;
+            box-shadow: 0 0 0 3px rgba(0, 164, 228, 0.1);
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+        }
+        
+        .btn-export-excel {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+        
+        .btn-export-excel:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(16, 185, 129, 0.4);
+        }
+        
+        .btn-export-pdf {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+        }
+        
+        .btn-export-pdf:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(239, 68, 68, 0.4);
+        }
+        
+        .btn-save {
+            background: white;
+            color: #6b7280;
+            border: 2px solid #e5e7eb;
+        }
+        
+        .btn-save:hover {
+            background: #f9fafb;
+            border-color: #d1d5db;
+        }
+        
+        .table-container {
+            padding: 20px;
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            background-color: white;
+        }
+        
+        th {
+            background: linear-gradient(135deg, #00a4e4 0%, #0073a3 100%);
+            color: white;
+            padding: 16px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        th:first-child {
+            border-top-left-radius: 10px;
+        }
+        
+        th:last-child {
+            border-top-right-radius: 10px;
+        }
+        
+        td {
+            padding: 14px 16px;
+            border-bottom: 1px solid #f1f3f5;
+            font-size: 14px;
+        }
+        
+        tr:hover td {
+            background-color: #f8fafc;
+        }
+        
+        .category-header {
+            background: linear-gradient(135deg, #00d4aa 0%, #00a4e4 100%);
+            color: white;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+        
+        .category-header td {
+            padding: 18px;
+            border: none;
+            letter-spacing: 0.5px;
+        }
+        
+        .subcategory {
+            background: linear-gradient(135deg, #eff6ff 0%, #e0f2fe 100%);
+            font-weight: 600;
+            color: #0073a3;
+        }
+        
+        .subcategory td {
+            padding: 12px 16px;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        
+        select, input[type="text"], input[type="number"], input[type="date"], textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+        
+        select {
+            cursor: pointer;
+            background: white;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M10.293 3.293L6 7.586 1.707 3.293A1 1 0 00.293 4.707l5 5a1 1 0 001.414 0l5-5a1 1 0 10-1.414-1.414z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 36px;
+        }
+        
+        select:focus, input:focus, textarea:focus {
+            outline: none;
+            border-color: #00a4e4;
+            box-shadow: 0 0 0 3px rgba(0, 164, 228, 0.1);
+        }
+        
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 12px;
+        }
+        
+        .checkbox-group.vendors {
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        }
+        
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+        
+        .checkbox-item:hover {
+            background: #f0f9ff;
+        }
+        
+        .checkbox-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: #00a4e4;
+        }
+        
+        .checkbox-item label {
+            cursor: pointer;
+            font-size: 14px;
+            color: #374151;
+            flex: 1;
+        }
+        
+        .info-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 8px;
+            background: #dbeafe;
+            color: #1e40af;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .required {
+            color: #ef4444;
+        }
+        
+        .footer {
+            background: #f8fafc;
+            padding: 30px 40px;
+            text-align: center;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+        }
+        
+        .footer-logo img {
+            height: 30px;
+            width: auto;
+            opacity: 0.8;
+        }
+        
+        .footer-text {
+            color: #6b7280;
+            font-size: 14px;
+        }
+        
+        @media print {
+            .action-bar {
+                display: none;
+            }
+            
+            body {
+                background: white;
+                padding: 0;
+            }
+            
+            .container {
+                box-shadow: none;
+                border-radius: 0;
+            }
+            
+            table {
+                page-break-inside: avoid;
+            }
+            
+            .category-header {
+                page-break-after: avoid;
+            }
+        }
+        
+        .loading {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .loading.active {
+            display: flex;
+        }
+        
+        .loading-content {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #e5e7eb;
+            border-top-color: #00a4e4;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .multi-select-label {
+            font-size: 12px;
+            color: #6b7280;
+            font-style: italic;
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="loading" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <p id="loadingText">Processing...</p>
+        </div>
+    </div>
+
+    <div class="container" id="mainContainer">
+        <div class="header">
+            <div class="header-content">
+                <div class="logo-section">
+                    <div class="portnox-logo">
+                        <img src="https://www.portnox.com/wp-content/uploads/2021/03/Portnotx_Logo_Color-768x193.png" alt="Portnox" />
+                    </div>
+                    <div class="header-text">
+                        <h1>Scoping Checklist</h1>
+                        <div class="subtitle">Network Access Control, TACACS+, and ZTNA Assessment</div>
+                    </div>
+                </div>
+                <div class="header-meta">
+                    <div class="date">Generated: <span id="currentDate"></span></div>
+                    <div class="version">Version 2.1</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="action-bar">
+            <div class="company-info">
+                <input type="text" placeholder="Company Name *" id="companyName" required>
+                <input type="text" placeholder="Contact Name *" id="contactName" required>
+                <input type="text" placeholder="Email *" id="contactEmail" required>
+            </div>
+            <div class="action-buttons">
+                <button class="btn btn-save" onclick="saveProgress()">
+                    💾 Save
+                </button>
+                <button class="btn btn-export-excel" onclick="exportToExcel()">
+                    📊 Export Excel
+                </button>
+                <button class="btn btn-export-pdf" onclick="exportToPDF()">
+                    📄 Export PDF
+                </button>
+            </div>
+        </div>
+        
+        <div class="table-container">
+            <table id="scopingTable">
+                <thead>
+                    <tr>
+                        <th width="20%">Category</th>
+                        <th width="30%">Assessment Item</th>
+                        <th width="35%">Options/Response</th>
+                        <th width="15%">Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- COMPANY PROFILE -->
+                    <tr class="category-header">
+                        <td colspan="4">1. COMPANY PROFILE & INDUSTRY</td>
+                    </tr>
+                    <tr>
+                        <td>Industry Vertical</td>
+                        <td>Primary Industry <span class="required">*</span></td>
+                        <td>
+                            <select required>
+                                <option value="">-- Select Industry --</option>
+                                <option>Healthcare</option>
+                                <option>Financial Services</option>
+                                <option>Manufacturing</option>
+                                <option>Retail</option>
+                                <option>Education (K-12)</option>
+                                <option>Higher Education</option>
+                                <option>Government - Federal</option>
+                                <option>Government - State/Local</option>
+                                <option>Technology</option>
+                                <option>Telecommunications</option>
+                                <option>Energy & Utilities</option>
+                                <option>Transportation & Logistics</option>
+                                <option>Media & Entertainment</option>
+                                <option>Legal Services</option>
+                                <option>Real Estate</option>
+                                <option>Hospitality</option>
+                                <option>Non-Profit</option>
+                                <option>Other</option>
+                            </select>
+                        </td>
+                        <td><input type="text" placeholder="Specific sector"></td>
+                    </tr>
+                    <tr>
+                        <td>Company Size</td>
+                        <td>Number of Employees</td>
+                        <td>
+                            <select>
+                                <option value="">-- Select Size --</option>
+                                <option>1-100 (Small)</option>
+                                <option>101-500 (SMB)</option>
+                                <option>501-1,000 (Mid-Market)</option>
+                                <option>1,001-5,000 (Enterprise)</option>
+                                <option>5,001-10,000 (Large Enterprise)</option>
+                                <option>10,000+ (Global Enterprise)</option>
+                            </select>
+                        </td>
+                        <td><input type="text" placeholder="Exact count"></td>
+                    </tr>
+                    <tr>
+                        <td>Geographic Presence</td>
+                        <td>Operating Regions</td>
+                        <td>
+                            <div class="checkbox-group">
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="region-na">
+                                    <label for="region-na">North America</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="region-emea">
+                                    <label for="region-emea">EMEA</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="region-apac">
+                                    <label for="region-apac">APAC</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="region-latam">
+                                    <label for="region-latam">LATAM</label>
+                                </div>
+                            </div>
+                        </td>
+                        <td><input type="text" placeholder="Countries"></td>
+                    </tr>
+
+                    <!-- DEPLOYMENT MODEL -->
+                    <tr class="category-header">
+                        <td colspan="4">2. PORTNOX DEPLOYMENT</td>
+                    </tr>
+                    <tr>
+                        <td>Platform Selection</td>
+                        <td>Portnox Deployment Type <span class="required">*</span></td>
+                        <td>
+                            <select required>
+                                <option value="">-- Select Platform --</option>
+                                <option>Portnox CLEAR (Cloud-Native)</option>
+                                <option>Portnox On-Premises</option>
+                                <option>Hybrid (CLEAR + Local Components)</option>
+                            </select>
+                        </td>
+                        <td><input type="text" placeholder="Requirements"></td>
+                    </tr>
+                    <tr>
+                        <td>Device Count</td>
+                        <td>Total Devices to License</td>
+                        <td><input type="number" placeholder="Enter total device count"></td>
+                        <td><input type="text" placeholder="3-year projection"></td>
+                    </tr>
+                    <tr>
+                        <td>Locations</td>
+                        <td>Number of Sites</td>
+                        <td><input type="number" placeholder="Enter number of locations"></td>
+                        <td><input type="text" placeholder="Geographic distribution"></td>
+                    </tr>
+
+                    <!-- IDENTITY PROVIDERS -->
+                    <tr class="category-header">
+                        <td colspan="4">3. IDENTITY PROVIDERS & DIRECTORIES</td>
+                    </tr>
+                    <tr class="subcategory">
+                        <td colspan="4">Primary Identity Sources</td>
+                    </tr>
+                    <tr>
+                        <td>Microsoft AD</td>
+                        <td>Active Directory</td>
+                        <td>
+                            <select>
+                                <option value="">-- Select Version --</option>
+                                <option>Windows Server 2022</option>
+                                <option>Windows Server 2019</option>
+                                <option>Windows Server 2016</option>
+                                <option>Windows Server 2012 R2</option>
+                                <option>Mixed Environment</option>
+                                <option>Not Applicable</option>
+                            </select>
+                        </td>
+                        <td><input type="text" placeholder="Domain/Forest"></td>
+                    </tr>
+                    <tr>
+                        <td>Microsoft Cloud</td>
+                        <td>Azure AD / Entra ID</td>
+                        <td>
+                            <select>
+                                <option value="">-- Select License --</option>
+                                <option>Entra ID Free</option>
+                                <option>Entra ID P1</option>
+                                <option>Entra ID P2</option>
+                                <option>Microsoft 365 Business</option>
+                                <option>Enterprise Agreement</option>
+                                <option>Not Used</option>
+                            </select>
+                        </td>
+                        <td><input type="text" placeholder="Tenant details"></td>
+                    </tr>
+                    <tr>
+                        <td>Okta</td>
+                        <td>Okta Identity Platform</td>
+                        <td>
+                            <select>
+                                <option value="">-- Select Okta Product --</option>
+                                <option>Okta Workforce Identity</option>
+                                <option>Okta Customer Identity</option>
+                                <option>Okta Single Sign-On</option>
+                                <option>Okta Universal Directory</option>
+                                <option>Okta Lifecycle Management</option>
+                                <option>Not Used</option>
+                            </select>
+                        </td>
+                        <td><input type="text" placeholder="User count"></td>
+                    </tr>
+                    <tr>
+                        <td>Google</td>
+                        <td>Google Workspace</td>
+                        <td>
+                            <select>
+                                <option value="">-- Select Edition --</option>
+                                <option>Business Starter</option>
+                                <option>Business Standard</option>
+                                <option>Business Plus</option>
+                                <option>Enterprise Standard</option>
+                                <option>Enterprise Plus</option>
+                                <option>Not Used</option>
+                            </select>
+                        </td>
+                        <td><input type="text" placeholder="Domain"></td>
+                    </tr>
+
+                    <!-- AUTHENTICATION METHODS -->
+                    <tr class="category-header">
+                        <td colspan="4">4. AUTHENTICATION METHODS</td>
+                    </tr>
+                    <tr class="subcategory">
+                        <td colspan="4">Wireless Authentication</td>
+                    </tr>
+                    <tr>
+                        <td>Certificate-Based</td>
+                        <td>EAP-TLS (802.1X)</td>
+                        <td>
+                            <select>
+                                <option value="">-- Select Status --</option>
+                                <option>Currently Deployed</option>
+                                <option>Planned - High Priority</option>
+                                <option>Planned - Low Priority</option>
+                                <option>Evaluating</option>
+                                <option>Not Required</option>
+                            </select>
+                        </td>
+                        <td><input type="text" placeholder="Scope"></td>
+                    </tr>
+                    <tr>
+                        <td>Credentials</td>
+                        <td>PEAP-MSCHAPv2</td>
+                        <td>
+                            <select>
+                                <option value="">-- Select Status --</option>
+                                <option>Currently Deployed</option>
+                                <option>Planned - High Priority</option>
+                                <option>Planned - Low Priority</option>
+                                <option>Evaluating</option>
+                                <option>Not Required</option>
+                            </select>
+                        </td>
+                        <td><input type="text" placeholder="User groups"></td>
+                    </tr>
+                    <tr class="subcategory">
+                        <td colspan="4">Wired Authentication</td>
+                    </tr>
+                    <tr>
+                        <td>Wired 802.1X</td>
+                        <td>Primary Method</td>
+                        <td>
+                            <select>
+                                <option value="">-- Select Method --</option>
+                                <option>EAP-TLS (Certificate)</option>
+                                <option>PEAP-MSCHAPv2</option>
+                                <option>MAB Only</option>
+                                <option>802.1X with MAB Fallback</option>
+                                <option>Open Network</option>
+                                <option>Not Applicable</option>
+                            </select>
+                        </td>
+                        <td><input type="text" placeholder="Coverage %"></td>
+                    </tr>
+                    <tr>
+                        <td>MAB</td>
+                        <td>MAC Authentication Bypass</td>
+                        <td>
+                            <select>
+                                <option value="">-- Select Usage --</option>
+                                <option>Primary for IoT/OT</option>
+                                <option>Fallback Method</option>
+                                <option>Printers/Phones Only</option>
+                                <option>All Non-802.1X Devices</option>
+                                <option>Not Used</option>
+                            </select>
+                        </td>
+                        <td><input type="text" placeholder="Device types"></td>
+                    </tr>
+                    <tr class="subcategory">
+                        <td colspan="4">Guest & BYOD Access</td>
+                    </tr>
+                    <tr>
+                        <td>Guest Portal</td>
+                        <td>Captive Portal Method</td>
+                        <td>
+                            <select>
+                                <option value="">-- Select Method --</option>
+                                <option>Self-Registration</option>
+                                <option>Sponsored Access</option>
+                                <option>SMS OTP</option>
+                                <option>Email Verification</option>
+                                <option>Social Login (OAuth)</option>
+                                <option>Pre-Registration</option>
+                                <option>Multiple Methods</option>
+                                <option>Not Required</option>
+                            </select>
+                        </td>
+                        <td><input type="text" placeholder="Requirements"></td>
+                    </tr>
+
+                    <!-- NETWORK INFRASTRUCTURE -->
+                    <tr class="category-header">
+                        <td colspan="4">5. NETWORK INFRASTRUCTURE</td>
+                    </tr>
+                    <tr class="subcategory">
+                        <td colspan="4">Wired Network</td>
+                    </tr>
+                    <tr>
+                        <td>Switch Vendors</td>
+                        <td>Wired Infrastructure <br><span class="multi-select-label">Select all that apply</span></td>
+                        <td>
+                            <div class="checkbox-group vendors">
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="switch-cisco-catalyst">
+                                    <label for="switch-cisco-catalyst">Cisco Catalyst</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="switch-cisco-nexus">
+                                    <label for="switch-cisco-nexus">Cisco Nexus</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="switch-cisco-meraki">
+                                    <label for="switch-cisco-meraki">Cisco Meraki</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="switch-aruba-cx">
+                                    <label for="switch-aruba-cx">Aruba CX</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="switch-hpe">
+                                    <label for="switch-hpe">HPE ProCurve/Aruba</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="switch-juniper">
+                                    <label for="switch-juniper">Juniper EX</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="switch-extreme">
+                                    <label for="switch-extreme">Extreme Networks</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="switch-fortinet">
+                                    <label for="switch-fortinet">Fortinet FortiSwitch</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="switch-dell">
+                                    <label for="switch-dell">Dell/Dell EMC</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="switch-other">
+                                    <label for="switch-other">Other</label>
+                                </div>
+                            </div>
+                        </td>
+                        <td><input type="text" placeholder="Models/versions"></td>
+                    </tr>
+                    <tr>
+                        <td>802.1X Ready</td>
+                        <td>Switch Capability</td>
+                        <td>
+                            <select>
+                                <option value="">-- Select Readiness --</option>
+                                <option>100% 802.1X Capable</option>
+                                <option>75-99% Capable</option>
+                                <option>50-74% Capable</option>
+                                <option>25-49% Capable</option>
+                                <option><25% Capable</option>
+                                <option>Upgrade Required</option>
+                            </select>
+                        </td>
+                        <td><input type="text" placeholder="Upgrade plan"></td>
+                    </tr>
+                    <tr class="subcategory">
+                        <td colspan="4">Wireless Network</td>
+                    </tr>
+                    <tr>
+                        <td>Wireless Vendors</td>
+                        <td>WLAN Infrastructure <br><span class="multi-select-label">Select all that apply</span></td>
+                        <td>
+                            <div class="checkbox-group vendors">
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="wlan-cisco-9800">
+                                    <label for="wlan-cisco-9800">Cisco Catalyst 9800</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="wlan-cisco-aireos">
+                                    <label for="wlan-cisco-aireos">Cisco AireOS WLC</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="wlan-cisco-meraki">
+                                    <label for="wlan-cisco-meraki">Cisco Meraki MR</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="wlan-aruba-controller">
+                                    <label for="wlan-aruba-controller">Aruba Controller</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="wlan-aruba-instant">
+                                    <label for="wlan-aruba-instant">Aruba Instant AP</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="wlan-aruba-central">
+                                    <label for="wlan-aruba-central">Aruba Central</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="wlan-juniper-mist">
+                                    <label for="wlan-juniper-mist">Juniper Mist</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="wlan-extreme">
+                                    <label for="wlan-extreme">Extreme Cloud IQ</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="wlan-ruckus">
+                                    <label for="wlan-ruckus">Ruckus SmartZone</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="wlan-fortinet">
+                                    <label for="wlan-fortinet">Fortinet FortiAP</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="wlan-ubiquiti">
+                                    <label for="wlan-ubiquiti">Ubiquiti UniFi</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="wlan-other">
+                                    <label for="wlan-other">Other</label>
+                                </div>
+                            </div>
+                        </td>
+                        <td><input type="text" placeholder="AP count/models"></td>
+                    </tr>
+
+                    <!-- MDM PLATFORMS -->
+                    <tr class="category-header">
+                        <td colspan="4">6. DEVICE MANAGEMENT (MDM/UEM)</td>
+                    </tr>
+                    <tr>
+                        <td>MDM Platforms</td>
+                        <td>MDM/UEM Solutions <br><span class="multi-select-label">Select all that apply</span></td>
+                        <td>
+                            <div class="checkbox-group vendors">
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="mdm-intune">
+                                    <label for="mdm-intune">Microsoft Intune</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="mdm-workspace-one">
+                                    <label for="mdm-workspace-one">VMware Workspace ONE</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="mdm-jamf-pro">
+                                    <label for="mdm-jamf-pro">JAMF Pro</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="mdm-jamf-now">
+                                    <label for="mdm-jamf-now">JAMF Now</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="mdm-mobileiron">
+                                    <label for="mdm-mobileiron">MobileIron/Ivanti</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="mdm-meraki">
+                                    <label for="mdm-meraki">Cisco Meraki SM</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="mdm-google">
+                                    <label for="mdm-google">Google Endpoint</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="mdm-kandji">
+                                    <label for="mdm-kandji">Kandji</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="mdm-mosyle">
+                                    <label for="mdm-mosyle">Mosyle</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="mdm-none">
+                                    <label for="mdm-none">No MDM</label>
+                                </div>
+                            </div>
+                        </td>
+                        <td><input type="text" placeholder="Coverage %"></td>
+                    </tr>
+
+                    <!-- ENDPOINT SECURITY -->
+                    <tr class="category-header">
+                        <td colspan="4">7. ENDPOINT SECURITY (EDR/XDR)</td>
+                    </tr>
+                    <tr>
+                        <td>EDR Platform</td>
+                        <td>Primary Security Solution</td>
+                        <td>
+                            <select>
+                                <option value="">-- Select EDR/XDR --</option>
+                                <option>CrowdStrike Falcon</option>
+                                <option>Microsoft Defender for Endpoint</option>
+                                <option>SentinelOne Singularity</option>
+                                <option>Palo Alto Cortex XDR</option>
+                                <option>Carbon Black Cloud</option>
+                                <option>Sophos Intercept X</option>
+                                <option>Trend Micro Vision One</option>
+                                <option>Cybereason</option>
+                                <option>FortiEDR</option>
+                                <option>Cisco Secure Endpoint</option>
+                                <option>Traditional AV Only</option>
+                                <option>Multiple Solutions</option>
+                                <option>None Deployed</option>
+                            </select>
+                        </td>
+                        <td><input type="text" placeholder="Coverage %"></td>
+                    </tr>
+
+                    <!-- DEVICE INVENTORY -->
+                    <tr class="category-header">
+                        <td colspan="4">8. DEVICE INVENTORY</td>
+                    </tr>
+                    <tr class="subcategory">
+                        <td colspan="4">Corporate Managed Devices</td>
+                    </tr>
+                    <tr>
+                        <td>Windows</td>
+                        <td>Windows Desktops/Laptops</td>
+                        <td><input type="number" placeholder="Device count"></td>
+                        <td><input type="text" placeholder="Win 10/11 split"></td>
+                    </tr>
+                    <tr>
+                        <td>macOS</td>
+                        <td>Mac Desktops/Laptops</td>
+                        <td><input type="number" placeholder="Device count"></td>
+                        <td><input type="text" placeholder="OS versions"></td>
+                    </tr>
+                    <tr>
+                        <td>ChromeOS</td>
+                        <td>Chromebooks</td>
+                        <td><input type="number" placeholder="Device count"></td>
+                        <td><input type="text" placeholder="Management"></td>
+                    </tr>
+                    <tr>
+                        <td>Linux</td>
+                        <td>Linux Workstations</td>
+                        <td><input type="number" placeholder="Device count"></td>
+                        <td><input type="text" placeholder="Distributions"></td>
+                    </tr>
+                    <tr class="subcategory">
+                        <td colspan="4">Mobile Devices</td>
+                    </tr>
+                    <tr>
+                        <td>iOS</td>
+                        <td>iPhones</td>
+                        <td><input type="number" placeholder="Device count"></td>
+                        <td><input type="text" placeholder="Corp vs BYOD"></td>
+                    </tr>
+                    <tr>
+                        <td>iPadOS</td>
+                        <td>iPads</td>
+                        <td><input type="number" placeholder="Device count"></td>
+                        <td><input type="text" placeholder="Usage"></td>
+                    </tr>
+                    <tr>
+                        <td>Android</td>
+                        <td>Android Phones/Tablets</td>
+                        <td><input type="number" placeholder="Device count"></td>
+                        <td><input type="text" placeholder="Corp vs BYOD"></td>
+                    </tr>
+                    <tr class="subcategory">
+                        <td colspan="4">IoT/OT Devices</td>
+                    </tr>
+                    <tr>
+                        <td>Printers/MFPs</td>
+                        <td>Network Printers</td>
+                        <td><input type="number" placeholder="Device count"></td>
+                        <td><input type="text" placeholder="Vendors"></td>
+                    </tr>
+                    <tr>
+                        <td>VoIP</td>
+                        <td>IP Phones</td>
+                        <td><input type="number" placeholder="Device count"></td>
+                        <td><input type="text" placeholder="Vendor/Model"></td>
+                    </tr>
+                    <tr>
+                        <td>Security</td>
+                        <td>IP Cameras</td>
+                        <td><input type="number" placeholder="Device count"></td>
+                        <td><input type="text" placeholder="Systems"></td>
+                    </tr>
+                    <tr>
+                        <td>Building Systems</td>
+                        <td>HVAC/BMS/Access Control</td>
+                        <td><input type="number" placeholder="Device count"></td>
+                        <td><input type="text" placeholder="Types"></td>
+                    </tr>
+                    <tr>
+                        <td>Medical</td>
+                        <td>Medical/Clinical Devices</td>
+                        <td><input type="number" placeholder="Device count"></td>
+                        <td><input type="text" placeholder="FDA Class"></td>
+                    </tr>
+
+                    <!-- PORTNOX TACACS+ -->
+                    <tr class="category-header">
+                        <td colspan="4">9. PORTNOX TACACS+</td>
+                    </tr>
+                    <tr>
+                        <td>TACACS+ Need</td>
+                        <td>Device Admin Access</td>
+                        <td>
+                            <select>
+                                <option value="">-- Select Requirement --</option>
+                                <option>Required - Replace Current</option>
+                                <option>Required - New Deployment</option>
+                                <option>Planned Future Phase</option>
+                                <option>Evaluating</option>
+                                <option>Not Required</option>
+                            </select>
+                        </td>
+                        <td><input type="text" placeholder="Current solution"></td>
+                    </tr>
+                    <tr>
+                        <td>Device Count</td>
+                        <td>Network Devices to Manage</td>
+                        <td><input type="number" placeholder="Number of devices"></td>
+                        <td><input type="text" placeholder="Device types"></td>
+                    </tr>
+
+                    <!-- PORTNOX ZTNA -->
+                    <tr class="category-header">
+                        <td colspan="4">10. PORTNOX ZTNA (Zero Trust Network Access)</td>
+                    </tr>
+                    <tr>
+                        <td>ZTNA Strategy</td>
+                        <td>Primary Use Case</td>
+                        <td>
+                            <select>
+                                <option value="">-- Select Use Case --</option>
+                                <option>VPN Replacement</option>
+                                <option>VPN Alternative/Augmentation</option>
+                                <option>Application Segmentation</option>
+                                <option>Third-Party Access</option>
+                                <option>Privileged Access</option>
+                                <option>Cloud Application Security</option>
+                                <option>Hybrid Work Enablement</option>
+                                <option>Not Required</option>
+                            </select>
+                        </td>
+                        <td><input type="text" placeholder="Current VPN"></td>
+                    </tr>
+                    <tr>
+                        <td>User Scope</td>
+                        <td>ZTNA User Base</td>
+                        <td><input type="number" placeholder="Number of users"></td>
+                        <td><input type="text" placeholder="User types"></td>
+                    </tr>
+
+                    <!-- COMPLIANCE -->
+                    <tr class="category-header">
+                        <td colspan="4">11. COMPLIANCE & SECURITY</td>
+                    </tr>
+                    <tr>
+                        <td>Regulations</td>
+                        <td>Compliance Requirements</td>
+                        <td>
+                            <div class="checkbox-group">
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="comp-hipaa">
+                                    <label for="comp-hipaa">HIPAA</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="comp-pci">
+                                    <label for="comp-pci">PCI-DSS</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="comp-sox">
+                                    <label for="comp-sox">SOX</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="comp-gdpr">
+                                    <label for="comp-gdpr">GDPR</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="comp-iso">
+                                    <label for="comp-iso">ISO 27001</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="comp-soc2">
+                                    <label for="comp-soc2">SOC 2</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="comp-nist">
+                                    <label for="comp-nist">NIST</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="comp-fedramp">
+                                    <label for="comp-fedramp">FedRAMP</label>
+                                </div>
+                            </div>
+                        </td>
+                        <td><input type="text" placeholder="Audit dates"></td>
+                    </tr>
+
+                    <!-- INTEGRATIONS -->
+                    <tr class="category-header">
+                        <td colspan="4">12. THIRD-PARTY INTEGRATIONS</td>
+                    </tr>
+                    <tr>
+                        <td>SIEM</td>
+                        <td>Security Information Platform</td>
+                        <td>
+                            <select>
+                                <option value="">-- Select SIEM --</option>
+                                <option>Splunk Enterprise/Cloud</option>
+                                <option>Microsoft Sentinel</option>
+                                <option>IBM QRadar</option>
+                                <option>Elastic Security</option>
+                                <option>Sumo Logic</option>
+                                <option>LogRhythm</option>
+                                <option>Datadog</option>
+                                <option>Chronicle (Google)</option>
+                                <option>No SIEM</option>
+                            </select>
+                        </td>
+                        <td><input type="text" placeholder="Log format"></td>
+                    </tr>
+
+                    <!-- PORTNOX FEATURES -->
+                    <tr class="category-header">
+                        <td colspan="4">13. PORTNOX SPECIFIC FEATURES</td>
+                    </tr>
+                    <tr>
+                        <td>AgentP</td>
+                        <td>Portnox Agent Strategy</td>
+                        <td>
+                            <select>
+                                <option value="">-- Select Deployment --</option>
+                                <option>All Corporate Devices</option>
+                                <option>Windows Devices Only</option>
+                                <option>Non-MDM Devices</option>
+                                <option>High-Risk Devices</option>
+                                <option>Pilot Group Only</option>
+                                <option>Agentless Preferred</option>
+                                <option>Not Required</option>
+                            </select>
+                        </td>
+                        <td><input type="text" placeholder="Distribution"></td>
+                    </tr>
+                    <tr>
+                        <td>RADIUS Architecture</td>
+                        <td>RADIUS Proxy Deployment</td>
+                        <td>
+                            <select>
+                                <option value="">-- Select Model --</option>
+                                <option>Cloud RADIUS Only</option>
+                                <option>Local Proxies - All Sites</option>
+                                <option>Local Proxies - Main Sites</option>
+                                <option>Hybrid Cloud + Local</option>
+                                <option>Existing RADIUS Integration</option>
+                            </select>
+                        </td>
+                        <td><input type="text" placeholder="Sites"></td>
+                    </tr>
+                    <tr>
+                        <td>Portals</td>
+                        <td>Self-Service Requirements</td>
+                        <td>
+                            <div class="checkbox-group">
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="portal-byod">
+                                    <label for="portal-byod">BYOD Onboarding</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="portal-guest">
+                                    <label for="portal-guest">Guest Registration</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="portal-sponsor">
+                                    <label for="portal-sponsor">Sponsor Portal</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="portal-remediation">
+                                    <label for="portal-remediation">Remediation Portal</label>
+                                </div>
+                            </div>
+                        </td>
+                        <td><input type="text" placeholder="Branding"></td>
+                    </tr>
+
+                    <!-- PROJECT PLANNING -->
+                    <tr class="category-header">
+                        <td colspan="4">14. PROJECT TIMELINE</td>
+                    </tr>
+                    <tr>
+                        <td>Timeline</td>
+                        <td>Target Go-Live Date</td>
+                        <td><input type="date"></td>
+                        <td><input type="text" placeholder="Phase milestones"></td>
+                    </tr>
+                    <tr>
+                        <td>Deployment</td>
+                        <td>Implementation Strategy</td>
+                        <td>
+                            <select>
+                                <option value="">-- Select Strategy --</option>
+                                <option>Big Bang - All at Once</option>
+                                <option>Phased by Location</option>
+                                <option>Phased by Department</option>
+                                <option>Phased by Device Type</option>
+                                <option>Pilot → Production</option>
+                                <option>Monitor Mode → Enforcement</option>
+                            </select>
+                        </td>
+                        <td><input type="text" placeholder="Risk mitigation"></td>
+                    </tr>
+
+                    <!-- NOTES -->
+                    <tr class="category-header">
+                        <td colspan="4">15. ADDITIONAL NOTES</td>
+                    </tr>
+                    <tr>
+                        <td>Requirements</td>
+                        <td colspan="2">
+                            <textarea placeholder="Describe specific requirements, challenges, and success criteria..."></textarea>
+                        </td>
+                        <td><span class="info-badge">Optional</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="footer">
+            <div class="footer-logo">
+                <img src="https://www.portnox.com/wp-content/uploads/2021/03/Portnotx_Logo_Color-768x193.png" alt="Portnox" />
+            </div>
+            <div class="footer-text">© 2024 Portnox. All rights reserved. | www.portnox.com</div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <script>
+        // Set current date
+        document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+
+        function exportToExcel() {
+            const loading = document.getElementById('loadingOverlay');
+            const loadingText = document.getElementById('loadingText');
+            loading.classList.add('active');
+            loadingText.textContent = 'Exporting to Excel...';
+            
+            setTimeout(() => {
+                const companyName = document.getElementById('companyName').value || 'Company';
+                const contactName = document.getElementById('contactName').value || '';
+                const contactEmail = document.getElementById('contactEmail').value || '';
+                const date = new Date().toISOString().split('T')[0];
+                
+                // Get table HTML
+                const table = document.getElementById('scopingTable');
+                const tableClone = table.cloneNode(true);
+                
+                // Process checkboxes to show selected values
+                const checkboxGroups = tableClone.querySelectorAll('.checkbox-group');
+                checkboxGroups.forEach(group => {
+                    const selected = [];
+                    const checkboxes = group.querySelectorAll('input[type="checkbox"]');
+                    checkboxes.forEach(cb => {
+                        if (cb.checked) {
+                            const label = group.querySelector(`label[for="${cb.id}"]`);
+                            if (label) selected.push(label.textContent);
+                        }
+                    });
+                    group.innerHTML = selected.length > 0 ? selected.join(', ') : 'None selected';
+                });
+                
+                // Add header with logo
+                const headerRow = `
+                    <tr>
+                        <td colspan="4" style="text-align: center; padding: 20px; background: #00a4e4;">
+                            <img src="https://www.portnox.com/wp-content/uploads/2021/03/Portnotx_Logo_Color-768x193.png" 
+                                 style="max-height: 50px;" alt="Portnox"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="4" style="font-size: 24px; font-weight: bold; text-align: center; 
+                            background: #00a4e4; color: white; padding: 20px;">
+                            Portnox Scoping Checklist Report
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: bold;">Company:</td>
+                        <td>${companyName}</td>
+                        <td style="font-weight: bold;">Date:</td>
+                        <td>${date}</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: bold;">Contact:</td>
+                        <td>${contactName}</td>
+                        <td style="font-weight: bold;">Email:</td>
+                        <td>${contactEmail}</td>
+                    </tr>
+                    <tr><td colspan="4">&nbsp;</td></tr>
+                `;
+                
+                const tbody = tableClone.querySelector('tbody');
+                tbody.insertAdjacentHTML('afterbegin', headerRow);
+                
+                // Create Excel-specific HTML
+                const html = `
+                    <html xmlns:o="urn:schemas-microsoft-com:office:office" 
+                          xmlns:x="urn:schemas-microsoft-com:office:excel" 
+                          xmlns="http://www.w3.org/TR/REC-html40">
+                    <head>
+                        <meta charset="utf-8">
+                        <style>
+                            table { border-collapse: collapse; width: 100%; }
+                            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                            th { background-color: #00a4e4; color: white; font-weight: bold; }
+                            .category-header { background-color: #00d4aa; color: white; font-weight: bold; }
+                            .subcategory { background-color: #e3f2fd; font-weight: bold; }
+                        </style>
+                    </head>
+                    <body>
+                        ${tableClone.outerHTML}
+                    </body>
+                    </html>
+                `;
+
+                // Create blob and download
+                const blob = new Blob(['\ufeff', html], {
+                    type: 'application/vnd.ms-excel'
+                });
+                
+                const downloadLink = document.createElement('a');
+                document.body.appendChild(downloadLink);
+                
+                const url = URL.createObjectURL(blob);
+                downloadLink.href = url;
+                downloadLink.download = `Portnox_Scoping_${companyName}_${date}.xls`;
+                downloadLink.click();
+                
+                document.body.removeChild(downloadLink);
+                URL.revokeObjectURL(url);
+                
+                loading.classList.remove('active');
+            }, 500);
+        }
+
+        async function exportToPDF() {
+            const loading = document.getElementById('loadingOverlay');
+            const loadingText = document.getElementById('loadingText');
+            loading.classList.add('active');
+            loadingText.textContent = 'Generating PDF...';
+            
+            const { jsPDF } = window.jspdf;
+            const companyName = document.getElementById('companyName').value || 'Company';
+            const date = new Date().toISOString().split('T')[0];
+            
+            try {
+                // Create PDF
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                const pageHeight = pdf.internal.pageSize.height;
+                const pageWidth = pdf.internal.pageSize.width;
+                
+                // Add logo and header on first page
+                pdf.setFillColor(0, 164, 228);
+                pdf.rect(0, 0, pageWidth, 40, 'F');
+                
+                // Add logo (you might need to convert to base64 for embedding)
+                pdf.setTextColor(255, 255, 255);
+                pdf.setFontSize(24);
+                pdf.text('PORTNOX', pageWidth/2, 20, { align: 'center' });
+                pdf.setFontSize(16);
+                pdf.text('Scoping Checklist Report', pageWidth/2, 30, { align: 'center' });
+                
+                // Add company info
+                pdf.setTextColor(0, 0, 0);
+                pdf.setFontSize(12);
+                let yPos = 50;
+                pdf.text(`Company: ${companyName}`, 20, yPos);
+                pdf.text(`Date: ${date}`, 120, yPos);
+                yPos += 10;
+                pdf.text(`Contact: ${document.getElementById('contactName').value || 'N/A'}`, 20, yPos);
+                pdf.text(`Email: ${document.getElementById('contactEmail').value || 'N/A'}`, 120, yPos);
+                
+                // Add table content
+                yPos += 20;
+                pdf.setFontSize(10);
+                
+                const table = document.getElementById('scopingTable');
+                const rows = table.querySelectorAll('tr');
+                
+                rows.forEach((row, index) => {
+                    if (index === 0) return; // Skip header
+                    
+                    if (yPos > pageHeight - 30) {
+                        pdf.addPage();
+                        yPos = 20;
+                    }
+                    
+                    const cells = row.querySelectorAll('td');
+                    if (cells.length > 0) {
+                        const isCategory = row.classList.contains('category-header');
+                        const isSubcategory = row.classList.contains('subcategory');
+                        
+                        if (isCategory) {
+                            pdf.setFillColor(0, 212, 170);
+                            pdf.rect(20, yPos - 5, pageWidth - 40, 10, 'F');
+                            pdf.setTextColor(255, 255, 255);
+                            pdf.setFontSize(11);
+                            pdf.setFont(undefined, 'bold');
+                            pdf.text(cells[0].textContent, 25, yPos);
+                            pdf.setFont(undefined, 'normal');
+                            pdf.setTextColor(0, 0, 0);
+                            pdf.setFontSize(10);
+                            yPos += 12;
+                        } else if (isSubcategory) {
+                            pdf.setFillColor(239, 246, 255);
+                            pdf.rect(20, yPos - 5, pageWidth - 40, 8, 'F');
+                            pdf.setFont(undefined, 'bold');
+                            pdf.text(cells[0].textContent, 25, yPos);
+                            pdf.setFont(undefined, 'normal');
+                            yPos += 10;
+                        } else if (cells.length >= 3) {
+                            // Regular data rows
+                            const category = cells[0].textContent;
+                            const item = cells[1].textContent;
+                            let value = '';
+                            
+                            // Get value from input/select/checkbox
+                            const input = cells[2].querySelector('input, select, textarea');
+                            const checkboxGroup = cells[2].querySelector('.checkbox-group');
+                            
+                            if (checkboxGroup) {
+                                const selected = [];
+                                checkboxGroup.querySelectorAll('input:checked').forEach(cb => {
+                                    const label = checkboxGroup.querySelector(`label[for="${cb.id}"]`);
+                                    if (label) selected.push(label.textContent);
+                                });
+                                value = selected.join(', ') || 'None selected';
+                            } else if (input) {
+                                value = input.value || 'Not specified';
+                            }
+                            
+                            // Add row data
+                            pdf.setFont(undefined, 'bold');
+                            pdf.text(category, 25, yPos);
+                            pdf.setFont(undefined, 'normal');
+                            pdf.text(item, 60, yPos);
+                            
+                            // Wrap long text for value
+                            const splitValue = pdf.splitTextToSize(value, 80);
+                            pdf.text(splitValue, 120, yPos);
+                            
+                            yPos += (splitValue.length * 5) + 3;
+                        }
+                    }
+                });
+                
+                // Add footer with logo on last page
+                pdf.setTextColor(128, 128, 128);
+                pdf.setFontSize(8);
+                pdf.text('© 2024 Portnox. All rights reserved. | www.portnox.com', pageWidth/2, pageHeight - 10, { align: 'center' });
+                
+                // Save PDF
+                pdf.save(`Portnox_Scoping_${companyName}_${date}.pdf`);
+                
+            } catch (error) {
+                console.error('PDF generation error:', error);
+                alert('Error generating PDF. Please try Excel export instead.');
+            } finally {
+                loading.classList.remove('active');
+            }
+        }
+
+        function saveProgress() {
+            const formData = {};
+            const inputs = document.querySelectorAll('input, select, textarea');
+            
+            inputs.forEach((input, index) => {
+                if (input.type === 'checkbox') {
+                    formData[`field_${index}`] = input.checked;
+                } else {
+                    formData[`field_${index}`] = input.value;
+                }
+            });
+            
+            localStorage.setItem('portnoxScoping', JSON.stringify(formData));
+            
+            // Show save confirmation
+            const saveBtn = document.querySelector('.btn-save');
+            const originalText = saveBtn.innerHTML;
+            saveBtn.innerHTML = '✓ Saved!';
+            saveBtn.style.background = '#10b981';
+            saveBtn.style.color = 'white';
+            
+            setTimeout(() => {
+                saveBtn.innerHTML = originalText;
+                saveBtn.style.background = 'white';
+                saveBtn.style.color = '#6b7280';
+            }, 2000);
+        }
+
+        // Load saved progress on page load
+        window.addEventListener('load', () => {
+            const savedData = localStorage.getItem('portnoxScoping');
+            if (savedData) {
+                const formData = JSON.parse(savedData);
+                const inputs = document.querySelectorAll('input, select, textarea');
+                
+                inputs.forEach((input, index) => {
+                    if (formData[`field_${index}`] !== undefined) {
+                        if (input.type === 'checkbox') {
+                            input.checked = formData[`field_${index}`];
+                        } else {
+                            input.value = formData[`field_${index}`];
+                        }
+                    }
+                });
+            }
+        });
+
+        // Auto-save on change
+        let autoSaveTimer;
+        document.addEventListener('change', (e) => {
+            if (e.target.matches('input, select, textarea')) {
+                clearTimeout(autoSaveTimer);
+                autoSaveTimer = setTimeout(saveProgress, 1000);
+            }
+        });
+    </script>
+</body>
+</html>
