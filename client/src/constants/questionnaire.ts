@@ -77,26 +77,105 @@ export const ssoProviders = [
 ];
 
 export const samlApplications = [
-  "Microsoft 365",
+  // Microsoft EAM / Microsoft 365
+  "Microsoft 365 / Office 365",
+  "Microsoft Teams",
+  "Microsoft SharePoint",
+  "Microsoft OneDrive",
+  "Microsoft Exchange Online",
+  "Microsoft Dynamics 365",
+  "Microsoft Power BI",
+  "Microsoft Power Apps",
+  "Microsoft Azure Portal",
+  "Microsoft Intune",
+  
+  // Google Workspace
   "Google Workspace",
+  "Google Drive",
+  "Google Meet",
+  "Google Cloud Console",
+  
+  // Business & Productivity
   "Salesforce",
   "ServiceNow",
   "Workday",
-  "SAP",
+  "SAP SuccessFactors",
+  "SAP Concur",
   "Oracle Cloud",
-  "Box",
-  "Dropbox",
+  "Oracle PeopleSoft",
+  "NetSuite",
+  "ADP Workforce Now",
+  
+  // Collaboration & Communication
   "Slack",
   "Zoom",
   "WebEx",
-  "AWS Console",
-  "Azure Portal",
+  "Miro",
+  "Asana",
+  "Monday.com",
+  "Smartsheet",
+  
+  // Storage & File Sharing
+  "Box",
+  "Dropbox",
+  "OneDrive for Business",
+  "Egnyte",
+  
+  // DevOps & Development
   "GitHub",
   "GitLab",
-  "Jira/Confluence",
+  "Bitbucket",
+  "Jira / Confluence",
+  "Azure DevOps",
+  "CircleCI",
+  "Jenkins",
+  
+  // AWS Services
+  "AWS Console",
+  "AWS SSO",
+  "AWS WorkSpaces",
+  "AWS QuickSight",
+  
+  // Analytics & BI
   "Tableau",
-  "Adobe Creative Cloud",
+  "Power BI",
+  "Looker",
+  "Qlik Sense",
+  "Domo",
+  
+  // Support & Service Management
   "Zendesk",
+  "Freshdesk",
+  "Intercom",
+  "HubSpot",
+  
+  // Creative & Design
+  "Adobe Creative Cloud",
+  "Figma",
+  "Canva",
+  
+  // HR & Talent Management
+  "BambooHR",
+  "Greenhouse",
+  "Lever",
+  "Namely",
+  
+  // Security & Compliance
+  "Duo Security",
+  "KnowBe4",
+  "Qualys",
+  "Rapid7 InsightVM",
+  
+  // Other Enterprise Apps
+  "Splunk",
+  "Datadog",
+  "New Relic",
+  "PagerDuty",
+  "DocuSign",
+  "Atlassian Cloud",
+  "Citrix Cloud",
+  "VMware Workspace ONE",
+  
   "Other (Custom)"
 ];
 
