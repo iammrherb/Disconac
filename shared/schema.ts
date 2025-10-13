@@ -155,6 +155,7 @@ export const deploymentChecklistsRelations = relations(deploymentChecklists, ({ 
 // Customer Profile
 export const insertCustomerProfileSchema = createInsertSchema(customerProfiles).omit({
   id: true,
+  userId: true,  // userId is added server-side, not from request
   createdAt: true,
   updatedAt: true,
 });

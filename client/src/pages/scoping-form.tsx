@@ -61,12 +61,15 @@ export default function ScopingForm() {
             setLocation(`/scoping/${session.id}`);
           }
         } catch (error) {
+          console.error("Session creation error:", error);
           toast({
             title: "Error",
-            description: "Failed to create session",
+            description: "Failed to create session. Please try again.",
             variant: "destructive",
           });
-          setIsCreatingSession(false);
+          // Don't reset isCreatingSession to prevent infinite loop
+          // User should navigate away manually
+          setLocation("/");  // Redirect to homepage on error
         }
       };
       createSessionWithCustomer();
