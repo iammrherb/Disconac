@@ -359,6 +359,147 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post('/api/documentation', async (req: any, res) => {
+    try {
+      const validated = insertDocumentationLinkSchema.parse(req.body);
+      const newDoc = await storage.createDocumentation(validated);
+      res.status(201).json(newDoc);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Validation error", errors: error.errors });
+      }
+      console.error("Error creating documentation:", error);
+      res.status(500).json({ message: "Failed to create documentation" });
+    }
+  });
+
+  app.put('/api/documentation/:id', async (req: any, res) => {
+    try {
+      const validated = insertDocumentationLinkSchema.partial().parse(req.body);
+      const updated = await storage.updateDocumentation(req.params.id, validated);
+      if (!updated) {
+        return res.status(404).json({ message: "Documentation not found" });
+      }
+      res.json(updated);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Validation error", errors: error.errors });
+      }
+      console.error("Error updating documentation:", error);
+      res.status(500).json({ message: "Failed to update documentation" });
+    }
+  });
+
+  app.delete('/api/documentation/:id', async (req: any, res) => {
+    try {
+      await storage.deleteDocumentation(req.params.id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting documentation:", error);
+      res.status(500).json({ message: "Failed to delete documentation" });
+    }
+  });
+
+  app.get('/api/documentation/duplicates', async (req: any, res) => {
+    try {
+      const duplicates = await storage.findDuplicateDocumentation();
+      res.json(duplicates);
+    } catch (error) {
+      console.error("Error finding duplicates:", error);
+      res.status(500).json({ message: "Failed to find duplicates" });
+    }
+  });
+
+  app.post('/api/documentation/crawl', async (req: any, res) => {
+    try {
+      const { url } = req.body;
+      if (!url) {
+        return res.status(400).json({ message: "URL is required" });
+      }
+
+      // Get Firecrawl API key from settings
+      const apiKeySetting = await storage.getSetting('firecrawl_api_key');
+      if (!apiKeySetting) {
+        return res.status(400).json({ message: "Firecrawl API key not configured. Please add it in Settings." });
+      }
+
+      // Make API call to Firecrawl
+      const response = await fetch('https://api.firecrawl.dev/v2/scrape', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKeySetting.value}`,
+        },
+        body: JSON.stringify({
+          url,
+          formats: ['markdown', 'html'],
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.text();
+        return res.status(response.status).json({ message: `Firecrawl API error: ${error}` });
+      }
+
+      const data = await response.json();
+      
+      // Extract content and upsert documentation entry (handles duplicates)
+      if (data.success && data.data) {
+        const newDoc = await storage.upsertDocumentationByUrl({
+          url,
+          title: data.data.title || url,
+          content: data.data.markdown || data.data.html || '',
+          category: 'Web Crawled',
+          tags: ['firecrawl', 'auto-imported'],
+        });
+        
+        res.json(newDoc);
+      } else {
+        res.status(500).json({ message: "Failed to extract data from URL" });
+      }
+    } catch (error) {
+      console.error("Error crawling documentation:", error);
+      res.status(500).json({ message: "Failed to crawl documentation" });
+    }
+  });
+
+  // ========== Settings Routes ==========
+  
+  app.get('/api/settings', async (req: any, res) => {
+    try {
+      const settings = await storage.getAllSettings();
+      res.json(settings);
+    } catch (error) {
+      console.error("Error fetching settings:", error);
+      res.status(500).json({ message: "Failed to fetch settings" });
+    }
+  });
+
+  app.put('/api/settings/:key', async (req: any, res) => {
+    try {
+      const { value, description } = req.body;
+      const setting = await storage.setSetting({
+        key: req.params.key,
+        value,
+        description,
+      });
+      res.json(setting);
+    } catch (error) {
+      console.error("Error updating setting:", error);
+      res.status(500).json({ message: "Failed to update setting" });
+    }
+  });
+
+  app.delete('/api/settings/:key', async (req: any, res) => {
+    try {
+      await storage.deleteSetting(req.params.key);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting setting:", error);
+      res.status(500).json({ message: "Failed to delete setting" });
+    }
+  });
+
   // ========== Deployment Checklist Routes ==========
   
   app.get('/api/sessions/:id/checklist', async (req: any, res) => {

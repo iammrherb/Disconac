@@ -6,6 +6,7 @@ import {
   questionnaireResponses,
   documentationLinks,
   deploymentChecklists,
+  appSettings,
   type User,
   type UpsertUser,
   type CustomerProfile,
@@ -18,6 +19,8 @@ import {
   type InsertDocumentationLink,
   type DeploymentChecklist,
   type InsertDeploymentChecklist,
+  type AppSetting,
+  type InsertAppSetting,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and } from "drizzle-orm";
@@ -110,7 +113,7 @@ export class DatabaseStorage implements IStorage {
     return customer;
   }
 
-  async createCustomer(customer: Omit<InsertCustomerProfile, "id">): Promise<CustomerProfile> {
+  async createCustomer(customer: Omit<InsertCustomerProfile, "id"> & { userId: string }): Promise<CustomerProfile> {
     const [newCustomer] = await db
       .insert(customerProfiles)
       .values(customer)
@@ -273,6 +276,59 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
+  async updateDocumentation(id: string, data: Partial<InsertDocumentationLink>): Promise<DocumentationLink | undefined> {
+    const [updated] = await db
+      .update(documentationLinks)
+      .set({ ...data, lastUpdated: new Date() })
+      .where(eq(documentationLinks.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteDocumentation(id: string): Promise<void> {
+    await db.delete(documentationLinks).where(eq(documentationLinks.id, id));
+  }
+
+  async findDuplicateDocumentation(): Promise<{ url: string; count: number; ids: string[] }[]> {
+    const allDocs = await db.select().from(documentationLinks);
+    const urlMap = new Map<string, { count: number; ids: string[] }>();
+    
+    allDocs.forEach(doc => {
+      const normalizedUrl = doc.url.trim().toLowerCase();
+      if (urlMap.has(normalizedUrl)) {
+        const entry = urlMap.get(normalizedUrl)!;
+        entry.count++;
+        entry.ids.push(doc.id);
+      } else {
+        urlMap.set(normalizedUrl, { count: 1, ids: [doc.id] });
+      }
+    });
+    
+    const duplicates = Array.from(urlMap.entries())
+      .filter(([_, data]) => data.count > 1)
+      .map(([url, data]) => ({ url, ...data }));
+    
+    return duplicates;
+  }
+
+  async upsertDocumentationByUrl(doc: Omit<InsertDocumentationLink, "id">): Promise<DocumentationLink> {
+    const [upserted] = await db
+      .insert(documentationLinks)
+      .values(doc)
+      .onConflictDoUpdate({
+        target: documentationLinks.url,
+        set: { 
+          title: doc.title,
+          content: doc.content,
+          category: doc.category,
+          tags: doc.tags,
+          lastUpdated: new Date(),
+        },
+      })
+      .returning();
+    return upserted;
+  }
+
   // ========== Deployment Checklist Operations ==========
   
   async getChecklistBySessionId(sessionId: string): Promise<DeploymentChecklist[]> {
@@ -320,6 +376,35 @@ export class DatabaseStorage implements IStorage {
       completedSessions: sessions.filter(s => s.status === 'completed').length,
       draftSessions: sessions.filter(s => s.status === 'draft' || s.status === 'in_progress').length,
     };
+  }
+
+  // ========== App Settings Operations ==========
+  
+  async getAllSettings(): Promise<AppSetting[]> {
+    return await db.select().from(appSettings);
+  }
+
+  async getSetting(key: string): Promise<AppSetting | undefined> {
+    const [setting] = await db.select()
+      .from(appSettings)
+      .where(eq(appSettings.key, key));
+    return setting;
+  }
+
+  async setSetting(data: InsertAppSetting): Promise<AppSetting> {
+    const [setting] = await db
+      .insert(appSettings)
+      .values(data)
+      .onConflictDoUpdate({
+        target: appSettings.key,
+        set: { value: data.value, updatedAt: new Date() },
+      })
+      .returning();
+    return setting;
+  }
+
+  async deleteSetting(key: string): Promise<void> {
+    await db.delete(appSettings).where(eq(appSettings.key, key));
   }
 }
 

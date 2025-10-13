@@ -109,6 +109,15 @@ export const deploymentChecklists = pgTable("deployment_checklists", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Application settings - stores API keys and configuration
+export const appSettings = pgTable("app_settings", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  key: text("key").notNull().unique(), // e.g., "firecrawl_api_key", "auto_refresh_enabled"
+  value: text("value").notNull(),
+  description: text("description"),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // ============================================================================
 // RELATIONS
 // ============================================================================
@@ -196,3 +205,11 @@ export const insertDeploymentChecklistSchema = createInsertSchema(deploymentChec
 });
 export type InsertDeploymentChecklist = z.infer<typeof insertDeploymentChecklistSchema>;
 export type DeploymentChecklist = typeof deploymentChecklists.$inferSelect;
+
+// App Settings
+export const insertAppSettingSchema = createInsertSchema(appSettings).omit({
+  id: true,
+  updatedAt: true,
+});
+export type InsertAppSetting = z.infer<typeof insertAppSettingSchema>;
+export type AppSetting = typeof appSettings.$inferSelect;
