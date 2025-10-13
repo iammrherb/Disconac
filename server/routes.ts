@@ -2,7 +2,6 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { setupAuth, isAuthenticated } from "./replitAuth";
 import { z } from "zod";
 import { 
   insertCustomerProfileSchema,
@@ -12,28 +11,28 @@ import {
   insertDeploymentChecklistSchema 
 } from "@shared/schema";
 
-export async function registerRoutes(app: Express): Promise<Server> {
-  // Setup authentication middleware
-  await setupAuth(app);
+// Temporary test user ID (no authentication)
+const TEST_USER_ID = "test-user-123";
 
-  // ========== Auth Routes ==========
+export async function registerRoutes(app: Express): Promise<Server> {
+
+  // ========== Auth Routes (disabled - no authentication) ==========
   
-  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
-      res.json(user);
-    } catch (error) {
-      console.error("Error fetching user:", error);
-      res.status(500).json({ message: "Failed to fetch user" });
-    }
+  app.get('/api/auth/user', async (req: any, res) => {
+    // Return a test user since auth is disabled
+    res.json({
+      id: TEST_USER_ID,
+      email: "test@portnox.com",
+      name: "Test User",
+      imageUrl: null
+    });
   });
 
   // ========== Customer Routes ==========
   
-  app.get('/api/customers', isAuthenticated, async (req: any, res) => {
+  app.get('/api/customers', async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = TEST_USER_ID;
       const customers = await storage.getCustomersByUserId(userId);
       res.json(customers);
     } catch (error) {
@@ -42,7 +41,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/customers/:id', isAuthenticated, async (req: any, res) => {
+  app.get('/api/customers/:id', async (req: any, res) => {
     try {
       const customer = await storage.getCustomer(req.params.id);
       if (!customer) {
@@ -50,7 +49,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Verify ownership
-      const userId = req.user.claims.sub;
+      const userId = TEST_USER_ID;
       if (customer.userId !== userId) {
         return res.status(403).json({ message: "Forbidden" });
       }
@@ -62,9 +61,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/customers', isAuthenticated, async (req: any, res) => {
+  app.post('/api/customers', async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = TEST_USER_ID;
       const validated = insertCustomerProfileSchema.parse(req.body);
       
       const customer = await storage.createCustomer({
@@ -82,7 +81,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put('/api/customers/:id', isAuthenticated, async (req: any, res) => {
+  app.put('/api/customers/:id', async (req: any, res) => {
     try {
       const customer = await storage.getCustomer(req.params.id);
       if (!customer) {
@@ -90,7 +89,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Verify ownership
-      const userId = req.user.claims.sub;
+      const userId = TEST_USER_ID;
       if (customer.userId !== userId) {
         return res.status(403).json({ message: "Forbidden" });
       }
@@ -108,7 +107,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete('/api/customers/:id', isAuthenticated, async (req: any, res) => {
+  app.delete('/api/customers/:id', async (req: any, res) => {
     try {
       const customer = await storage.getCustomer(req.params.id);
       if (!customer) {
@@ -116,7 +115,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Verify ownership
-      const userId = req.user.claims.sub;
+      const userId = TEST_USER_ID;
       if (customer.userId !== userId) {
         return res.status(403).json({ message: "Forbidden" });
       }
@@ -131,9 +130,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // ========== Scoping Session Routes ==========
   
-  app.get('/api/sessions', isAuthenticated, async (req: any, res) => {
+  app.get('/api/sessions', async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = TEST_USER_ID;
       const sessions = await storage.getSessionsByUserId(userId);
       res.json(sessions);
     } catch (error) {
@@ -142,9 +141,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/sessions/recent', isAuthenticated, async (req: any, res) => {
+  app.get('/api/sessions/recent', async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = TEST_USER_ID;
       const limit = parseInt(req.query.limit as string) || 5;
       const sessions = await storage.getRecentSessionsByUserId(userId, limit);
       res.json(sessions);
@@ -154,7 +153,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/sessions/:id', isAuthenticated, async (req: any, res) => {
+  app.get('/api/sessions/:id', async (req: any, res) => {
     try {
       const session = await storage.getSession(req.params.id);
       if (!session) {
@@ -167,7 +166,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Customer not found" });
       }
       
-      const userId = req.user.claims.sub;
+      const userId = TEST_USER_ID;
       if (customer.userId !== userId) {
         return res.status(403).json({ message: "Forbidden" });
       }
@@ -179,9 +178,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/sessions', isAuthenticated, async (req: any, res) => {
+  app.post('/api/sessions', async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = TEST_USER_ID;
       const validated = insertScopingSessionSchema.parse(req.body);
       
       // Verify customer ownership
@@ -201,7 +200,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put('/api/sessions/:id', isAuthenticated, async (req: any, res) => {
+  app.put('/api/sessions/:id', async (req: any, res) => {
     try {
       const session = await storage.getSession(req.params.id);
       if (!session) {
@@ -214,7 +213,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Customer not found" });
       }
       
-      const userId = req.user.claims.sub;
+      const userId = TEST_USER_ID;
       if (customer.userId !== userId) {
         return res.status(403).json({ message: "Forbidden" });
       }
@@ -232,7 +231,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete('/api/sessions/:id', isAuthenticated, async (req: any, res) => {
+  app.delete('/api/sessions/:id', async (req: any, res) => {
     try {
       const session = await storage.getSession(req.params.id);
       if (!session) {
@@ -245,7 +244,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Customer not found" });
       }
       
-      const userId = req.user.claims.sub;
+      const userId = TEST_USER_ID;
       if (customer.userId !== userId) {
         return res.status(403).json({ message: "Forbidden" });
       }
@@ -260,7 +259,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // ========== Questionnaire Response Routes ==========
   
-  app.get('/api/sessions/:id/responses', isAuthenticated, async (req: any, res) => {
+  app.get('/api/sessions/:id/responses', async (req: any, res) => {
     try {
       const session = await storage.getSession(req.params.id);
       if (!session) {
@@ -273,7 +272,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Customer not found" });
       }
       
-      const userId = req.user.claims.sub;
+      const userId = TEST_USER_ID;
       if (customer.userId !== userId) {
         return res.status(403).json({ message: "Forbidden" });
       }
@@ -286,7 +285,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put('/api/sessions/:id/responses', isAuthenticated, async (req: any, res) => {
+  app.put('/api/sessions/:id/responses', async (req: any, res) => {
     try {
       const session = await storage.getSession(req.params.id);
       if (!session) {
@@ -299,7 +298,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Customer not found" });
       }
       
-      const userId = req.user.claims.sub;
+      const userId = TEST_USER_ID;
       if (customer.userId !== userId) {
         return res.status(403).json({ message: "Forbidden" });
       }
@@ -332,7 +331,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // ========== Documentation Routes ==========
   
-  app.get('/api/documentation', isAuthenticated, async (req: any, res) => {
+  app.get('/api/documentation', async (req: any, res) => {
     try {
       const query = req.query.q as string;
       const docs = query 
@@ -345,7 +344,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/documentation/import', isAuthenticated, async (req: any, res) => {
+  app.post('/api/documentation/import', async (req: any, res) => {
     try {
       const docs = req.body;
       if (!Array.isArray(docs)) {
@@ -362,7 +361,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // ========== Deployment Checklist Routes ==========
   
-  app.get('/api/sessions/:id/checklist', isAuthenticated, async (req: any, res) => {
+  app.get('/api/sessions/:id/checklist', async (req: any, res) => {
     try {
       const session = await storage.getSession(req.params.id);
       if (!session) {
@@ -375,7 +374,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Customer not found" });
       }
       
-      const userId = req.user.claims.sub;
+      const userId = TEST_USER_ID;
       if (customer.userId !== userId) {
         return res.status(403).json({ message: "Forbidden" });
       }
@@ -388,7 +387,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/sessions/:id/checklist', isAuthenticated, async (req: any, res) => {
+  app.post('/api/sessions/:id/checklist', async (req: any, res) => {
     try {
       const session = await storage.getSession(req.params.id);
       if (!session) {
@@ -401,7 +400,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Customer not found" });
       }
       
-      const userId = req.user.claims.sub;
+      const userId = TEST_USER_ID;
       if (customer.userId !== userId) {
         return res.status(403).json({ message: "Forbidden" });
       }
@@ -422,7 +421,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put('/api/checklist/:id', isAuthenticated, async (req: any, res) => {
+  app.put('/api/checklist/:id', async (req: any, res) => {
     try {
       const validated = insertDeploymentChecklistSchema.partial().parse(req.body);
       const updated = await storage.updateChecklistItem(req.params.id, validated);
@@ -441,7 +440,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete('/api/checklist/:id', isAuthenticated, async (req: any, res) => {
+  app.delete('/api/checklist/:id', async (req: any, res) => {
     try {
       await storage.deleteChecklistItem(req.params.id);
       res.status(204).send();
@@ -453,9 +452,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // ========== Stats Routes ==========
   
-  app.get('/api/stats', isAuthenticated, async (req: any, res) => {
+  app.get('/api/stats', async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = TEST_USER_ID;
       const stats = await storage.getUserStats(userId);
       res.json(stats);
     } catch (error) {
@@ -466,7 +465,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // ========== Recommendation Routes ==========
   
-  app.post('/api/sessions/:id/generate-checklist', isAuthenticated, async (req: any, res) => {
+  app.post('/api/sessions/:id/generate-checklist', async (req: any, res) => {
     try {
       const session = await storage.getSession(req.params.id);
       if (!session) {
@@ -479,7 +478,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Customer not found" });
       }
       
-      const userId = req.user.claims.sub;
+      const userId = TEST_USER_ID;
       if (customer.userId !== userId) {
         return res.status(403).json({ message: "Forbidden" });
       }
@@ -500,7 +499,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/documentation/recommendations', isAuthenticated, async (req: any, res) => {
+  app.post('/api/documentation/recommendations', async (req: any, res) => {
     try {
       const responses = req.body;
       const { getDocumentationRecommendations } = await import("./services");
