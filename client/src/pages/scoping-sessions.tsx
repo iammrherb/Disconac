@@ -1,18 +1,23 @@
-import { useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { FileText, Plus, Calendar, Building2 } from "lucide-react";
 import { Link } from "wouter";
+import { CustomerSelectionDialog } from "@/components/CustomerSelectionDialog";
 import type { ScopingSession } from "@shared/schema";
 
 export default function ScopingSessions() {
   const { toast } = useToast();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const [, setLocation] = useLocation();
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -31,6 +36,46 @@ export default function ScopingSessions() {
     queryKey: ["/api/sessions"],
     enabled: isAuthenticated,
   });
+
+  const createSessionMutation = useMutation<ScopingSession, Error, string>({
+    mutationFn: async (customerId: string) => {
+      const res = await apiRequest("POST", "/api/sessions", {
+        customerId,
+        sessionName: `Scoping Session - ${new Date().toLocaleDateString()}`,
+        status: "draft",
+      });
+      return await res.json();
+    },
+    onSuccess: (session: ScopingSession) => {
+      if (!session?.id) {
+        toast({
+          title: "Error",
+          description: "Session created but missing ID",
+          variant: "destructive",
+        });
+        setDialogOpen(false);
+        return;
+      }
+      
+      toast({
+        title: "Success",
+        description: "Scoping session created successfully",
+      });
+      setLocation(`/scoping/${session.id}`);
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create scoping session",
+        variant: "destructive",
+      });
+      setDialogOpen(false);
+    },
+  });
+
+  const handleCustomerSelected = (customerId: string) => {
+    createSessionMutation.mutate(customerId);
+  };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -60,12 +105,15 @@ export default function ScopingSessions() {
             Manage all your Portnox scoping and assessment sessions
           </p>
         </div>
-        <Link href="/scoping/new">
-          <Button size="lg" className="gap-2" data-testid="button-new-session">
-            <Plus className="h-4 w-4" />
-            New Session
-          </Button>
-        </Link>
+        <Button 
+          size="lg" 
+          className="gap-2" 
+          onClick={() => setDialogOpen(true)}
+          data-testid="button-new-session"
+        >
+          <Plus className="h-4 w-4" />
+          New Session
+        </Button>
       </div>
 
       {isLoading ? (
@@ -93,12 +141,13 @@ export default function ScopingSessions() {
             <p className="text-sm text-muted-foreground mb-6 text-center max-w-sm">
               Create your first scoping session to start assessing customer environments
             </p>
-            <Link href="/scoping/new">
-              <Button data-testid="button-create-first-session">
-                <Plus className="h-4 w-4 mr-2" />
-                Create First Session
-              </Button>
-            </Link>
+            <Button 
+              onClick={() => setDialogOpen(true)} 
+              data-testid="button-create-first-session"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Create First Session
+            </Button>
           </CardContent>
         </Card>
       ) : (
@@ -139,6 +188,12 @@ export default function ScopingSessions() {
           ))}
         </div>
       )}
+
+      <CustomerSelectionDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        onCustomerSelected={handleCustomerSelected}
+      />
     </div>
   );
 }

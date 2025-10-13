@@ -217,7 +217,7 @@ export default function Customers() {
                 <div className="grid gap-2">
                   <Label htmlFor="industry">Industry</Label>
                   <Select
-                    value={formData.industry}
+                    value={formData.industry || undefined}
                     onValueChange={(value) => setFormData({ ...formData, industry: value })}
                   >
                     <SelectTrigger id="industry" data-testid="select-industry">
@@ -235,7 +235,7 @@ export default function Customers() {
                 <div className="grid gap-2">
                   <Label htmlFor="companySize">Company Size</Label>
                   <Select
-                    value={formData.companySize}
+                    value={formData.companySize || undefined}
                     onValueChange={(value) => setFormData({ ...formData, companySize: value })}
                   >
                     <SelectTrigger id="companySize" data-testid="select-company-size">

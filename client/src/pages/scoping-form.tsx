@@ -35,46 +35,17 @@ export default function ScopingForm() {
 
   const [formData, setFormData] = useState(initializeFormData());
 
-  // If id is "new", create a default customer and session, then redirect
+  // Redirect to sessions page if trying to access /scoping/new directly
   useEffect(() => {
-    if (id === "new" && !isCreatingSession) {
-      setIsCreatingSession(true);
-      const createSessionWithCustomer = async () => {
-        try {
-          // Create default customer
-          const customer = await apiRequest("POST", "/api/customers", {
-            companyName: "New Customer",
-            contactName: "Primary Contact",
-            contactEmail: "contact@company.com",
-            industry: "Technology",
-            companySize: "1-50",
-          });
-          
-          // Create session
-          const session = await apiRequest("POST", "/api/sessions", {
-            customerId: customer.id,
-            sessionName: `Scoping Session - ${new Date().toLocaleDateString()}`,
-            status: "draft",
-          });
-          
-          if (session?.id) {
-            setLocation(`/scoping/${session.id}`);
-          }
-        } catch (error) {
-          console.error("Session creation error:", error);
-          toast({
-            title: "Error",
-            description: "Failed to create session. Please try again.",
-            variant: "destructive",
-          });
-          // Don't reset isCreatingSession to prevent infinite loop
-          // User should navigate away manually
-          setLocation("/");  // Redirect to homepage on error
-        }
-      };
-      createSessionWithCustomer();
+    if (id === "new") {
+      toast({
+        title: "Invalid Access",
+        description: "Please create a scoping session from the Sessions page",
+        variant: "destructive",
+      });
+      setLocation("/sessions");
     }
-  }, [id, isCreatingSession, toast, setLocation]);
+  }, [id, toast, setLocation]);
 
   const { data: session, isLoading: sessionLoading } = useQuery<ScopingSession>({
     queryKey: ["/api/sessions", id],
