@@ -6,6 +6,31 @@ This is a professional scoping and deployment planning tool for Portnox Network 
 
 The tool features a questionnaire-based scoping workflow that collects information about customer infrastructure, identity systems, and deployment preferences. Based on responses, it automatically generates customized deployment checklists with prioritized tasks and links to relevant Portnox documentation.
 
+## Recent Changes (October 2025)
+
+**Customer Profile Enforcement (Completed):**
+- Implemented mandatory customer profile creation/selection before scoping sessions
+- Created CustomerSelectionDialog component with tabs for "Select Existing" and "Create New" customer
+- Modified scoping-sessions page to show dialog instead of direct navigation
+- Protected /scoping/new route to prevent bypass of customer selection flow
+- Fixed API response handling with proper JSON parsing in mutations
+
+**Questionnaire Enhancements (Completed):**
+- Added "Other" option with custom text input to all vendor selection fields for dynamic vendor addition
+- Expanded SAML/OpenID applications list to 80+ enterprise apps (Microsoft EAM, Google Workspace, AWS, GitHub, etc.)
+- Added four new sections: Guest Access/BYOD, Captive Portal Configuration, BYOD Policy Details, Contractor Access Management
+- Configuration-driven architecture using questionnaireConfig.ts with SectionRenderer component
+
+**Bug Fixes (Completed):**
+- Fixed infinite 400 validation error loop by making userId optional in insertCustomerProfileSchema
+- Added loop prevention guard in scoping session creation
+- Fixed Select component value type issues (null to undefined conversion)
+
+**Remaining Tasks:**
+- Documentation management features (duplicate detection, refresh, external import)
+- Checklist validation before export (verify links and completeness)
+- PDF/Word export functionality for deployment checklists
+
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
