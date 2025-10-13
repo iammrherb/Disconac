@@ -8,7 +8,50 @@ interface ChecklistRecommendation {
   description: string;
   priority: "critical" | "high" | "medium" | "low";
   relatedDocs: DocumentationLink[];
+  bestPractices?: string[];
+  firewallPorts?: string;
+  prerequisites?: string[];
 }
+
+// Field mappings for comprehensive checklist generation
+const fieldMappings: Record<string, { category: string; priority: "critical" | "high" | "medium" | "low"; tags: string[] }> = {
+  // Identity Providers
+  identityProviders: { category: "Identity & Access", priority: "critical", tags: ["identity", "authentication", "idp"] },
+  // Authentication Methods
+  authenticationTypes: { category: "Network Security", priority: "high", tags: ["authentication", "802.1x", "radius", "eap"] },
+  // Security Stack
+  edrXdrVendors: { category: "Security Stack Integration", priority: "medium", tags: ["edr", "xdr", "endpoint", "security"] },
+  siemVendors: { category: "SIEM & Logging", priority: "high", tags: ["siem", "logging", "analytics", "monitoring"] },
+  firewallVendors: { category: "Network Security", priority: "medium", tags: ["firewall", "network security", "perimeter"] },
+  mdmVendors: { category: "Endpoint Management", priority: "medium", tags: ["mdm", "mobile", "endpoint management"] },
+  // Network Infrastructure
+  wiredSwitchVendors: { category: "Network Infrastructure", priority: "critical", tags: ["switch", "802.1x", "radius", "wired"] },
+  wirelessVendors: { category: "Wireless Infrastructure", priority: "critical", tags: ["wireless", "wlan", "radius", "802.1x"] },
+  vpnVendors: { category: "Remote Access", priority: "high", tags: ["vpn", "remote access", "radius"] },
+  tacacsVendors: { category: "Device Administration", priority: "high", tags: ["tacacs", "device admin", "radius"] },
+  // MFA & SSO
+  mfaProviders: { category: "Identity & Access", priority: "high", tags: ["mfa", "multi-factor", "authentication"] },
+  ssoProviders: { category: "Identity & Access", priority: "high", tags: ["sso", "single sign-on", "saml"] },
+  samlApplications: { category: "Application Integration", priority: "medium", tags: ["saml", "sso", "application"] },
+  // Deployment
+  virtualizationPlatforms: { category: "Platform Deployment", priority: "critical", tags: ["virtualization", "vm", "deployment"] },
+  containerPlatforms: { category: "Platform Deployment", priority: "medium", tags: ["container", "docker", "kubernetes"] },
+  cloudProviders: { category: "Cloud Deployment", priority: "high", tags: ["cloud", "deployment", "infrastructure"] },
+  // ZTNA
+  ztnaHostedApps: { category: "ZTNA Applications", priority: "medium", tags: ["ztna", "zero trust", "application access"] },
+};
+
+// Firewall port requirements by technology
+const firewallRequirements: Record<string, string> = {
+  "RADIUS": "UDP 1812 (auth), 1813 (accounting)",
+  "LDAP": "TCP 389 (LDAP), 636 (LDAPS), 3268/3269 (GC)",
+  "HTTPS": "TCP 443",
+  "Kerberos": "TCP/UDP 88, 464",
+  "SNMP": "UDP 161, 162",
+  "CoA": "UDP 3799",
+  "Syslog": "UDP/TCP 514",
+  "SSH": "TCP 22",
+};
 
 // Generate deployment checklist based on questionnaire responses
 export async function generateDeploymentChecklist(
@@ -29,51 +72,42 @@ export async function generateDeploymentChecklist(
     ).slice(0, 3);
   };
 
-  // Network Infrastructure prerequisites
-  if (responses.switchVendors?.length > 0) {
-    responses.switchVendors.forEach((vendor: string) => {
+  // Process all mapped fields comprehensively
+  Object.entries(fieldMappings).forEach(([fieldId, mapping]) => {
+    const value = responses[fieldId];
+    if (!value) return;
+
+    const values = Array.isArray(value) ? value : [value];
+    values.forEach((item: string) => {
+      if (!item || item === '' || item === 'N/A' || item === 'Not Used') return;
+
+      // Determine firewall requirements based on category
+      let firewallPorts = '';
+      if (mapping.tags.includes('radius') || mapping.tags.includes('802.1x')) {
+        firewallPorts = `${firewallRequirements.RADIUS}; ${firewallRequirements.CoA || ''}`;
+      }
+      if (mapping.tags.includes('ldap') || mapping.tags.includes('identity')) {
+        firewallPorts = firewallPorts ? `${firewallPorts}; ${firewallRequirements.LDAP}` : firewallRequirements.LDAP;
+      }
+      if (mapping.category.includes('Cloud') || mapping.category.includes('Integration')) {
+        firewallPorts = firewallPorts ? `${firewallPorts}; ${firewallRequirements.HTTPS}` : firewallRequirements.HTTPS;
+      }
+
       checklist.push({
-        category: "Network Infrastructure",
-        task: `Configure ${vendor} switches for 802.1X`,
-        description: `Enable 802.1X authentication on ${vendor} switches and configure RADIUS integration`,
-        priority: "critical",
-        relatedDocs: findDocs([vendor, "802.1X", "switch", "radius"]),
+        category: mapping.category,
+        task: `Configure ${item}`,
+        description: `Set up and integrate ${item} with Portnox for ${mapping.category.toLowerCase()}`,
+        priority: mapping.priority,
+        relatedDocs: findDocs([item, ...mapping.tags]),
+        firewallPorts: firewallPorts || undefined,
+        bestPractices: [
+          `Follow vendor-specific best practices for ${item}`,
+          `Ensure high availability configuration where applicable`,
+          `Document configuration settings and credentials securely`
+        ],
       });
     });
-  }
-
-  if (responses.wlanVendors?.length > 0) {
-    responses.wlanVendors.forEach((vendor: string) => {
-      checklist.push({
-        category: "Wireless Infrastructure",
-        task: `Configure ${vendor} wireless controllers`,
-        description: `Set up RADIUS authentication and wireless security policies on ${vendor} infrastructure`,
-        priority: "critical",
-        relatedDocs: findDocs([vendor, "wireless", "wlan", "radius"]),
-      });
-    });
-  }
-
-  // Identity & Authentication prerequisites
-  if (responses.activeDirectory && responses.activeDirectory !== "na") {
-    checklist.push({
-      category: "Identity Integration",
-      task: "Integrate Active Directory",
-      description: `Configure Active Directory ${responses.activeDirectory} integration with Portnox CLEAR`,
-      priority: "critical",
-      relatedDocs: findDocs(["Active Directory", "AD", "LDAP", "identity"]),
-    });
-  }
-
-  if (responses.azureAD && responses.azureAD !== "na") {
-    checklist.push({
-      category: "Identity Integration",
-      task: "Integrate Azure AD / Entra ID",
-      description: `Set up Azure AD ${responses.azureAD} integration for cloud identity`,
-      priority: "critical",
-      relatedDocs: findDocs(["Azure AD", "Entra", "Azure", "cloud identity"]),
-    });
-  }
+  });
 
   // Deployment Type prerequisites
   if (responses.deploymentType) {
