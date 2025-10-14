@@ -642,6 +642,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post('/api/documentation/crawl-multiple', async (req: any, res) => {
+    try {
+      const { urls } = req.body;
+      if (!Array.isArray(urls) || urls.length === 0) {
+        return res.status(400).json({ message: "URLs array is required" });
+      }
+
+      const { crawlMultipleUrls } = await import('./firecrawl-service');
+      const result = await crawlMultipleUrls(urls, {
+        delayMs: 1000,
+        maxConcurrent: 3,
+      });
+
+      res.json(result);
+    } catch (error) {
+      console.error("Error crawling multiple URLs:", error);
+      res.status(500).json({ message: "Failed to crawl URLs" });
+    }
+  });
+
+  app.post('/api/documentation/crawl-all-portnox', async (req: any, res) => {
+    try {
+      const { crawlAllPortnoxDocs } = await import('./firecrawl-service');
+      const options = req.body || {};
+      
+      const result = await crawlAllPortnoxDocs(options);
+      res.json(result);
+    } catch (error) {
+      console.error("Error crawling all Portnox docs:", error);
+      res.status(500).json({ message: "Failed to crawl Portnox documentation" });
+    }
+  });
+
+  app.get('/api/documentation/crawl-status', async (req: any, res) => {
+    try {
+      const { getCrawlStatus } = await import('./firecrawl-service');
+      const status = await getCrawlStatus();
+      res.json(status);
+    } catch (error) {
+      console.error("Error getting crawl status:", error);
+      res.status(500).json({ message: "Failed to get crawl status" });
+    }
+  });
+
+  app.post('/api/documentation/refresh-stale', async (req: any, res) => {
+    try {
+      const { daysOld = 30 } = req.body;
+      const { refreshStaleDocumentation } = await import('./firecrawl-service');
+      
+      const result = await refreshStaleDocumentation(daysOld);
+      res.json(result);
+    } catch (error) {
+      console.error("Error refreshing stale documentation:", error);
+      res.status(500).json({ message: "Failed to refresh stale documentation" });
+    }
+  });
+
   // ========== Settings Routes ==========
   
   app.get('/api/settings', async (req: any, res) => {
@@ -1514,6 +1571,82 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error generating timeline estimate:", error);
       res.status(500).json({ message: "Failed to generate timeline estimate" });
+    }
+  });
+
+  // ========== Salesforce Integration Routes ==========
+  
+  app.get('/api/salesforce/test-connection', async (req: any, res) => {
+    try {
+      const { testSalesforceConnection } = await import('./salesforce-service');
+      const result = await testSalesforceConnection();
+      res.json(result);
+    } catch (error) {
+      console.error("Error testing Salesforce connection:", error);
+      res.status(500).json({ message: "Failed to test Salesforce connection" });
+    }
+  });
+
+  app.post('/api/salesforce/sync-customer/:customerId', async (req: any, res) => {
+    const userId = requireAuth(req, res);
+    if (!userId) return;
+
+    try {
+      const customer = await storage.getCustomer(req.params.customerId);
+      if (!customer) {
+        return res.status(404).json({ message: "Customer not found" });
+      }
+
+      if (customer.userId !== userId) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+
+      const { syncCustomerToSalesforce } = await import('./salesforce-service');
+      const result = await syncCustomerToSalesforce(customer);
+      
+      if (!result) {
+        return res.status(500).json({ message: "Failed to sync customer to Salesforce" });
+      }
+
+      res.json(result);
+    } catch (error) {
+      console.error("Error syncing customer to Salesforce:", error);
+      res.status(500).json({ message: "Failed to sync customer" });
+    }
+  });
+
+  app.post('/api/salesforce/sync-session/:sessionId', async (req: any, res) => {
+    const userId = requireAuth(req, res);
+    if (!userId) return;
+
+    try {
+      const session = await storage.getSession(req.params.sessionId);
+      if (!session) {
+        return res.status(404).json({ message: "Session not found" });
+      }
+
+      const customer = await storage.getCustomer(session.customerId);
+      if (!customer || customer.userId !== userId) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+
+      const responses = await storage.getResponsesBySessionId(req.params.sessionId);
+      const responsesMap = responses.reduce((acc: Record<string, any>, resp) => {
+        acc[resp.question] = resp.response;
+        return acc;
+      }, {});
+
+      const { syncSessionToSalesforce } = await import('./salesforce-service');
+      const result = await syncSessionToSalesforce(session, customer, responsesMap);
+      
+      if (!result) {
+        return res.status(500).json({ message: "Failed to sync session to Salesforce" });
+      }
+
+      res.json(result);
+    } catch (error) {
+      console.error("Error syncing session to Salesforce:", error);
+      res.status(500).json({ message: "Failed to sync session" });
     }
   });
 
