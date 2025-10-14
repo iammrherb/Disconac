@@ -56,20 +56,24 @@ export interface IStorage {
   upsertUser(user: UpsertUser): Promise<User>;
   
   // Customer operations
-  getCustomersByUserId(userId: string): Promise<CustomerProfile[]>;
+  getCustomersByUserId(userId: string, includeArchived?: boolean): Promise<CustomerProfile[]>;
   getCustomer(id: string): Promise<CustomerProfile | undefined>;
   createCustomer(customer: Omit<InsertCustomerProfile, "id">): Promise<CustomerProfile>;
   updateCustomer(id: string, data: Partial<InsertCustomerProfile>): Promise<CustomerProfile | undefined>;
   deleteCustomer(id: string): Promise<void>;
+  archiveCustomer(id: string): Promise<void>;
+  unarchiveCustomer(id: string): Promise<void>;
   
   // Scoping session operations
-  getSessionsByCustomerId(customerId: string): Promise<ScopingSession[]>;
-  getSessionsByUserId(userId: string): Promise<ScopingSession[]>;
+  getSessionsByCustomerId(customerId: string, includeArchived?: boolean): Promise<ScopingSession[]>;
+  getSessionsByUserId(userId: string, includeArchived?: boolean): Promise<ScopingSession[]>;
   getRecentSessionsByUserId(userId: string, limit: number): Promise<ScopingSession[]>;
   getSession(id: string): Promise<ScopingSession | undefined>;
   createSession(session: Omit<InsertScopingSession, "id">): Promise<ScopingSession>;
   updateSession(id: string, data: Partial<InsertScopingSession>): Promise<ScopingSession | undefined>;
   deleteSession(id: string): Promise<void>;
+  archiveSession(id: string): Promise<void>;
+  unarchiveSession(id: string): Promise<void>;
   
   // Questionnaire response operations
   getResponsesBySessionId(sessionId: string): Promise<QuestionnaireResponse[]>;
@@ -177,10 +181,14 @@ export class DatabaseStorage implements IStorage {
 
   // ========== Customer Operations ==========
   
-  async getCustomersByUserId(userId: string): Promise<CustomerProfile[]> {
+  async getCustomersByUserId(userId: string, includeArchived: boolean = false): Promise<CustomerProfile[]> {
+    const conditions = [eq(customerProfiles.userId, userId)];
+    if (!includeArchived) {
+      conditions.push(eq(customerProfiles.isArchived, false));
+    }
     return await db.select()
       .from(customerProfiles)
-      .where(eq(customerProfiles.userId, userId))
+      .where(and(...conditions))
       .orderBy(desc(customerProfiles.createdAt));
   }
 
@@ -212,30 +220,51 @@ export class DatabaseStorage implements IStorage {
     await db.delete(customerProfiles).where(eq(customerProfiles.id, id));
   }
 
+  async archiveCustomer(id: string): Promise<void> {
+    await db.update(customerProfiles)
+      .set({ isArchived: true, updatedAt: new Date() })
+      .where(eq(customerProfiles.id, id));
+  }
+
+  async unarchiveCustomer(id: string): Promise<void> {
+    await db.update(customerProfiles)
+      .set({ isArchived: false, updatedAt: new Date() })
+      .where(eq(customerProfiles.id, id));
+  }
+
   // ========== Scoping Session Operations ==========
   
-  async getSessionsByCustomerId(customerId: string): Promise<ScopingSession[]> {
+  async getSessionsByCustomerId(customerId: string, includeArchived: boolean = false): Promise<ScopingSession[]> {
+    const conditions = [eq(scopingSessions.customerId, customerId)];
+    if (!includeArchived) {
+      conditions.push(eq(scopingSessions.isArchived, false));
+    }
     return await db.select()
       .from(scopingSessions)
-      .where(eq(scopingSessions.customerId, customerId))
+      .where(and(...conditions))
       .orderBy(desc(scopingSessions.createdAt));
   }
 
-  async getSessionsByUserId(userId: string): Promise<ScopingSession[]> {
+  async getSessionsByUserId(userId: string, includeArchived: boolean = false): Promise<ScopingSession[]> {
     // Join with customer profiles to filter by userId
+    const conditions = [eq(customerProfiles.userId, userId)];
+    if (!includeArchived) {
+      conditions.push(eq(scopingSessions.isArchived, false));
+    }
     return await db.select({
       id: scopingSessions.id,
       customerId: scopingSessions.customerId,
       sessionName: scopingSessions.sessionName,
       version: scopingSessions.version,
       status: scopingSessions.status,
+      isArchived: scopingSessions.isArchived,
       completedAt: scopingSessions.completedAt,
       createdAt: scopingSessions.createdAt,
       updatedAt: scopingSessions.updatedAt,
     })
       .from(scopingSessions)
       .innerJoin(customerProfiles, eq(scopingSessions.customerId, customerProfiles.id))
-      .where(eq(customerProfiles.userId, userId))
+      .where(and(...conditions))
       .orderBy(desc(scopingSessions.createdAt));
   }
 
@@ -246,13 +275,17 @@ export class DatabaseStorage implements IStorage {
       sessionName: scopingSessions.sessionName,
       version: scopingSessions.version,
       status: scopingSessions.status,
+      isArchived: scopingSessions.isArchived,
       completedAt: scopingSessions.completedAt,
       createdAt: scopingSessions.createdAt,
       updatedAt: scopingSessions.updatedAt,
     })
       .from(scopingSessions)
       .innerJoin(customerProfiles, eq(scopingSessions.customerId, customerProfiles.id))
-      .where(eq(customerProfiles.userId, userId))
+      .where(and(
+        eq(customerProfiles.userId, userId),
+        eq(scopingSessions.isArchived, false)
+      ))
       .orderBy(desc(scopingSessions.createdAt))
       .limit(limit);
   }
@@ -283,6 +316,18 @@ export class DatabaseStorage implements IStorage {
 
   async deleteSession(id: string): Promise<void> {
     await db.delete(scopingSessions).where(eq(scopingSessions.id, id));
+  }
+
+  async archiveSession(id: string): Promise<void> {
+    await db.update(scopingSessions)
+      .set({ isArchived: true, updatedAt: new Date() })
+      .where(eq(scopingSessions.id, id));
+  }
+
+  async unarchiveSession(id: string): Promise<void> {
+    await db.update(scopingSessions)
+      .set({ isArchived: false, updatedAt: new Date() })
+      .where(eq(scopingSessions.id, id));
   }
 
   // ========== Questionnaire Response Operations ==========

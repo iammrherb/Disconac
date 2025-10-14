@@ -16,29 +16,57 @@ interface ChecklistRecommendation {
 // Field mappings for comprehensive checklist generation
 const fieldMappings: Record<string, { category: string; priority: "critical" | "high" | "medium" | "low"; tags: string[] }> = {
   // Identity Providers
-  identityProviders: { category: "Identity & Access", priority: "critical", tags: ["identity", "authentication", "idp"] },
+  identityProviders: { category: "Identity & Access", priority: "critical", tags: ["identity", "authentication", "idp", "active directory", "ldap"] },
+  primaryIdP: { category: "Identity & Access", priority: "critical", tags: ["identity", "authentication", "idp", "active directory", "ldap"] },
+  certificateAuthority: { category: "PKI & Certificates", priority: "high", tags: ["certificate", "pki", "ca", "802.1x", "eap-tls"] },
+  
   // Authentication Methods
   authenticationTypes: { category: "Network Security", priority: "high", tags: ["authentication", "802.1x", "radius", "eap"] },
+  
   // Security Stack
-  edrXdrVendors: { category: "Security Stack Integration", priority: "medium", tags: ["edr", "xdr", "endpoint", "security"] },
-  siemVendors: { category: "SIEM & Logging", priority: "high", tags: ["siem", "logging", "analytics", "monitoring"] },
-  firewallVendors: { category: "Network Security", priority: "medium", tags: ["firewall", "network security", "perimeter"] },
-  mdmVendors: { category: "Endpoint Management", priority: "medium", tags: ["mdm", "mobile", "endpoint management"] },
+  edrXdrVendors: { category: "Security Stack Integration", priority: "medium", tags: ["edr", "xdr", "endpoint", "security", "integration"] },
+  siemVendors: { category: "SIEM & Logging", priority: "high", tags: ["siem", "logging", "analytics", "monitoring", "integration"] },
+  firewallVendors: { category: "Network Security", priority: "medium", tags: ["firewall", "network security", "perimeter", "integration"] },
+  mdmVendors: { category: "Endpoint Management", priority: "medium", tags: ["mdm", "mobile", "endpoint management", "integration"] },
+  
+  // Device Types
+  deviceTypes: { category: "Endpoint Management", priority: "medium", tags: ["endpoint", "devices", "inventory", "profiling"] },
+  byodDeviceTypes: { category: "BYOD Management", priority: "medium", tags: ["byod", "personal devices", "guest", "onboarding"] },
+  
   // Network Infrastructure
-  wiredSwitchVendors: { category: "Network Infrastructure", priority: "critical", tags: ["switch", "802.1x", "radius", "wired"] },
-  wirelessVendors: { category: "Wireless Infrastructure", priority: "critical", tags: ["wireless", "wlan", "radius", "802.1x"] },
-  vpnVendors: { category: "Remote Access", priority: "high", tags: ["vpn", "remote access", "radius"] },
-  tacacsVendors: { category: "Device Administration", priority: "high", tags: ["tacacs", "device admin", "radius"] },
+  wiredSwitchVendors: { category: "Network Infrastructure", priority: "critical", tags: ["switch", "802.1x", "radius", "wired", "network"] },
+  wirelessVendors: { category: "Wireless Infrastructure", priority: "critical", tags: ["wireless", "wlan", "radius", "802.1x", "wifi"] },
+  vpnVendors: { category: "Remote Access", priority: "high", tags: ["vpn", "remote access", "radius", "ssl vpn"] },
+  tacacsVendors: { category: "Device Administration", priority: "high", tags: ["tacacs", "tacacs+", "device admin", "radius", "network devices"] },
+  
   // MFA & SSO
-  mfaProviders: { category: "Identity & Access", priority: "high", tags: ["mfa", "multi-factor", "authentication"] },
-  ssoProviders: { category: "Identity & Access", priority: "high", tags: ["sso", "single sign-on", "saml"] },
-  samlApplications: { category: "Application Integration", priority: "medium", tags: ["saml", "sso", "application"] },
-  // Deployment
-  virtualizationPlatforms: { category: "Platform Deployment", priority: "critical", tags: ["virtualization", "vm", "deployment"] },
-  containerPlatforms: { category: "Platform Deployment", priority: "medium", tags: ["container", "docker", "kubernetes"] },
-  cloudProviders: { category: "Cloud Deployment", priority: "high", tags: ["cloud", "deployment", "infrastructure"] },
+  mfaProviders: { category: "Identity & Access", priority: "high", tags: ["mfa", "multi-factor", "authentication", "2fa"] },
+  ssoProviders: { category: "Identity & Access", priority: "high", tags: ["sso", "single sign-on", "saml", "oauth"] },
+  samlApplications: { category: "Application Integration", priority: "medium", tags: ["saml", "sso", "application", "federation"] },
+  
+  // Guest Access & BYOD
+  guestAccessTypes: { category: "Guest Access", priority: "medium", tags: ["guest", "visitor", "guest network", "captive portal"] },
+  captivePortalAuthMethods: { category: "Guest Access", priority: "medium", tags: ["captive portal", "guest", "authentication", "self-service"] },
+  contractorAccessTypes: { category: "Third-Party Access", priority: "medium", tags: ["contractor", "vendor", "third-party", "temporary access"] },
+  
+  // Deployment Types
+  deploymentType: { category: "Platform Deployment", priority: "critical", tags: ["deployment", "architecture", "on-premises", "cloud", "clear"] },
+  deploymentLocations: { category: "Platform Deployment", priority: "high", tags: ["deployment", "locations", "distributed", "regional"] },
+  virtualizationPlatforms: { category: "Platform Deployment", priority: "critical", tags: ["virtualization", "vm", "deployment", "vmware", "hyper-v"] },
+  preferredVirtualization: { category: "Platform Deployment", priority: "critical", tags: ["virtualization", "vm", "deployment"] },
+  containerPlatforms: { category: "Platform Deployment", priority: "medium", tags: ["container", "docker", "kubernetes", "deployment"] },
+  cloudProviders: { category: "Cloud Deployment", priority: "high", tags: ["cloud", "deployment", "infrastructure", "aws", "azure", "gcp"] },
+  primaryCloud: { category: "Cloud Deployment", priority: "high", tags: ["cloud", "deployment", "infrastructure"] },
+  
+  // Component Deployments
+  nacDeployment: { category: "NAC Deployment", priority: "critical", tags: ["nac", "deployment", "network access control", "core"] },
+  ztnaGatewayDeployment: { category: "ZTNA Deployment", priority: "high", tags: ["ztna", "zero trust", "gateway", "deployment", "secure access"] },
+  radiusDeployment: { category: "RADIUS Deployment", priority: "critical", tags: ["radius", "deployment", "authentication", "aaa"] },
+  siemCollectorDeployment: { category: "SIEM Integration", priority: "medium", tags: ["siem", "collector", "logging", "deployment"] },
+  iotFingerprintingDeployment: { category: "IoT Security", priority: "medium", tags: ["iot", "fingerprinting", "profiling", "devices", "deployment"] },
+  
   // ZTNA
-  ztnaHostedApps: { category: "ZTNA Applications", priority: "medium", tags: ["ztna", "zero trust", "application access"] },
+  ztnaHostedApps: { category: "ZTNA Applications", priority: "medium", tags: ["ztna", "zero trust", "application access", "secure access"] },
 };
 
 // Firewall port requirements by technology
@@ -236,23 +264,45 @@ export async function getDocumentationRecommendations(
   const allDocs = await storage.getAllDocumentation();
   const scoredDocs: Array<{ doc: DocumentationLink; score: number }> = [];
 
-  // Build search criteria from responses
+  // Build search criteria from responses using fieldMappings
   const searchTerms: string[] = [];
+  const searchTags: string[] = [];
   
-  if (responses.deploymentType) searchTerms.push(responses.deploymentType);
-  if (responses.industry) searchTerms.push(responses.industry);
-  if (responses.switchVendors) searchTerms.push(...responses.switchVendors);
-  if (responses.wlanVendors) searchTerms.push(...responses.wlanVendors);
-  if (responses.activeDirectory && responses.activeDirectory !== "na") searchTerms.push("Active Directory");
-  if (responses.azureAD && responses.azureAD !== "na") searchTerms.push("Azure AD");
+  // Extract search terms and tags from all mapped fields
+  Object.entries(fieldMappings).forEach(([fieldId, mapping]) => {
+    const value = responses[fieldId];
+    if (!value) return;
+    
+    // Add the response values as search terms
+    const values = Array.isArray(value) ? value : [value];
+    values.forEach((item: string) => {
+      if (item && item !== '' && item !== 'N/A' && item !== 'Not Used') {
+        searchTerms.push(item);
+      }
+    });
+    
+    // Add the tags from the mapping as search criteria
+    if (values.some((item: string) => item && item !== '' && item !== 'N/A' && item !== 'Not Used')) {
+      searchTags.push(...mapping.tags);
+    }
+  });
 
   // Score each document based on relevance
   allDocs.forEach(doc => {
     let score = 0;
     const docText = `${doc.title} ${doc.content} ${doc.tags?.join(" ") || ""}`.toLowerCase();
 
+    // Score based on search terms (response values)
     searchTerms.forEach(term => {
       if (docText.includes(term.toLowerCase())) {
+        score += 2; // Higher weight for exact matches
+      }
+    });
+
+    // Score based on tags from mappings
+    searchTags.forEach(tag => {
+      if (doc.tags?.some(docTag => docTag.toLowerCase().includes(tag.toLowerCase())) ||
+          docText.includes(tag.toLowerCase())) {
         score += 1;
       }
     });

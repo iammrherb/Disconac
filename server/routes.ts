@@ -172,6 +172,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post('/api/customers/:id/archive', async (req: any, res) => {
+    try {
+      const userId = requireAuth(req, res);
+      if (!userId) return;
+
+      const customer = await storage.getCustomer(req.params.id);
+      if (!customer) {
+        return res.status(404).json({ message: "Customer not found" });
+      }
+      
+      // Verify ownership
+      if (customer.userId !== userId) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+      
+      await storage.archiveCustomer(req.params.id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error archiving customer:", error);
+      res.status(500).json({ message: "Failed to archive customer" });
+    }
+  });
+
+  app.post('/api/customers/:id/unarchive', async (req: any, res) => {
+    try {
+      const userId = requireAuth(req, res);
+      if (!userId) return;
+
+      const customer = await storage.getCustomer(req.params.id);
+      if (!customer) {
+        return res.status(404).json({ message: "Customer not found" });
+      }
+      
+      // Verify ownership
+      if (customer.userId !== userId) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+      
+      await storage.unarchiveCustomer(req.params.id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error unarchiving customer:", error);
+      res.status(500).json({ message: "Failed to unarchive customer" });
+    }
+  });
+
   // ========== Scoping Session Routes ==========
   
   app.get('/api/sessions', async (req: any, res) => {
@@ -304,6 +350,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting session:", error);
       res.status(500).json({ message: "Failed to delete session" });
+    }
+  });
+
+  app.post('/api/sessions/:id/archive', async (req: any, res) => {
+    try {
+      const session = await storage.getSession(req.params.id);
+      if (!session) {
+        return res.status(404).json({ message: "Session not found" });
+      }
+      
+      // Verify ownership
+      const customer = await storage.getCustomer(session.customerId);
+      if (!customer) {
+        return res.status(404).json({ message: "Customer not found" });
+      }
+      
+      const userId = requireAuth(req, res);
+      if (!userId) return;
+      if (customer.userId !== userId) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+      
+      await storage.archiveSession(req.params.id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error archiving session:", error);
+      res.status(500).json({ message: "Failed to archive session" });
+    }
+  });
+
+  app.post('/api/sessions/:id/unarchive', async (req: any, res) => {
+    try {
+      const session = await storage.getSession(req.params.id);
+      if (!session) {
+        return res.status(404).json({ message: "Session not found" });
+      }
+      
+      // Verify ownership
+      const customer = await storage.getCustomer(session.customerId);
+      if (!customer) {
+        return res.status(404).json({ message: "Customer not found" });
+      }
+      
+      const userId = requireAuth(req, res);
+      if (!userId) return;
+      if (customer.userId !== userId) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+      
+      await storage.unarchiveSession(req.params.id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error unarchiving session:", error);
+      res.status(500).json({ message: "Failed to unarchive session" });
     }
   });
 

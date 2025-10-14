@@ -56,6 +56,7 @@ export const customerProfiles = pgTable("customer_profiles", {
   contactEmail: text("contact_email").notNull(),
   industry: text("industry"),
   companySize: text("company_size"),
+  isArchived: boolean("is_archived").default(false),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -67,6 +68,7 @@ export const scopingSessions = pgTable("scoping_sessions", {
   sessionName: text("session_name").notNull(),
   version: text("version").default("2.1"),
   status: text("status").notNull().default("draft"), // draft, in_progress, completed
+  isArchived: boolean("is_archived").default(false),
   completedAt: timestamp("completed_at"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
