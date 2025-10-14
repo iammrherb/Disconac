@@ -9,6 +9,7 @@ import {
   varchar,
   integer,
   boolean,
+  unique,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -108,6 +109,21 @@ export const deploymentChecklists = pgTable("deployment_checklists", {
   relatedDocUrl: text("related_doc_url"),
   createdAt: timestamp("created_at").defaultNow(),
 });
+
+// Approved documentation - tracks user-approved docs for each session
+export const approvedDocumentation = pgTable("approved_documentation", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  sessionId: varchar("session_id").notNull().references(() => scopingSessions.id, { onDelete: "cascade" }),
+  documentationId: varchar("documentation_id").notNull().references(() => documentationLinks.id, { onDelete: "cascade" }),
+  approved: boolean("approved").notNull().default(true),
+  reviewNotes: text("review_notes"),
+  approvedAt: timestamp("approved_at").defaultNow(),
+  approvedBy: varchar("approved_by").references(() => users.id),
+}, (table) => [
+  index("idx_approved_docs_session").on(table.sessionId),
+  index("idx_approved_docs_documentation").on(table.documentationId),
+  unique("unique_session_doc").on(table.sessionId, table.documentationId),
+]);
 
 // Application settings - stores API keys and configuration
 export const appSettings = pgTable("app_settings", {
@@ -250,6 +266,7 @@ export const scopingSessionsRelations = relations(scopingSessions, ({ one, many 
   }),
   responses: many(questionnaireResponses),
   checklists: many(deploymentChecklists),
+  approvedDocs: many(approvedDocumentation),
   nacAssessment: one(nacAssessments),
   milestones: many(projectMilestones),
 }));
@@ -265,6 +282,21 @@ export const deploymentChecklistsRelations = relations(deploymentChecklists, ({ 
   session: one(scopingSessions, {
     fields: [deploymentChecklists.sessionId],
     references: [scopingSessions.id],
+  }),
+}));
+
+export const approvedDocumentationRelations = relations(approvedDocumentation, ({ one }) => ({
+  session: one(scopingSessions, {
+    fields: [approvedDocumentation.sessionId],
+    references: [scopingSessions.id],
+  }),
+  documentation: one(documentationLinks, {
+    fields: [approvedDocumentation.documentationId],
+    references: [documentationLinks.id],
+  }),
+  user: one(users, {
+    fields: [approvedDocumentation.approvedBy],
+    references: [users.id],
   }),
 }));
 
@@ -364,6 +396,14 @@ export const insertDeploymentChecklistSchema = createInsertSchema(deploymentChec
 });
 export type InsertDeploymentChecklist = z.infer<typeof insertDeploymentChecklistSchema>;
 export type DeploymentChecklist = typeof deploymentChecklists.$inferSelect;
+
+// Approved Documentation
+export const insertApprovedDocumentationSchema = createInsertSchema(approvedDocumentation).omit({
+  id: true,
+  approvedAt: true,
+});
+export type InsertApprovedDocumentation = z.infer<typeof insertApprovedDocumentationSchema>;
+export type ApprovedDocumentation = typeof approvedDocumentation.$inferSelect;
 
 // App Settings
 export const insertAppSettingSchema = createInsertSchema(appSettings).omit({

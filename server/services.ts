@@ -58,12 +58,17 @@ export async function generateDeploymentChecklist(
   sessionId: string,
   responses: Record<string, any>
 ): Promise<ChecklistRecommendation[]> {
-  const allDocs = await storage.getAllDocumentation();
+  // Get approved documentation for this session
+  const approvedDocsData = await storage.getApprovedDocsBySessionId(sessionId);
+  const approvedDocs = approvedDocsData.map(ad => ad.documentation);
+  
+  // If no docs approved, use all docs as fallback (for backward compatibility)
+  const docsToSearch = approvedDocs.length > 0 ? approvedDocs : await storage.getAllDocumentation();
   const checklist: ChecklistRecommendation[] = [];
 
-  // Helper to find related documentation
+  // Helper to find related documentation (only from approved docs)
   const findDocs = (tags: string[]) => {
-    return allDocs.filter(doc => 
+    return docsToSearch.filter(doc => 
       tags.some(tag => 
         doc.tags?.some(docTag => docTag.toLowerCase().includes(tag.toLowerCase())) ||
         doc.content.toLowerCase().includes(tag.toLowerCase()) ||

@@ -9,6 +9,7 @@ import {
   insertQuestionnaireResponseSchema,
   insertDocumentationLinkSchema,
   insertDeploymentChecklistSchema,
+  insertApprovedDocumentationSchema,
   insertChecklistTemplateSchema,
   insertChecklistItemTemplateSchema,
   insertOptionCatalogSchema,
@@ -1137,6 +1138,88 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting task:", error);
       res.status(500).json({ message: "Failed to delete task" });
+    }
+  });
+
+  // ========== Approved Documentation Routes ==========
+  
+  app.get('/api/sessions/:sessionId/approved-docs', async (req: any, res) => {
+    const userId = requireAuth(req, res);
+    if (!userId) return;
+
+    try {
+      // Verify session ownership
+      const session = await storage.getSession(req.params.sessionId);
+      if (!session) {
+        return res.status(404).json({ message: "Session not found" });
+      }
+      
+      const customer = await storage.getCustomer(session.customerId);
+      if (!customer || customer.userId !== userId) {
+        return res.status(403).json({ message: "Forbidden: You do not own this session" });
+      }
+
+      const approvedDocs = await storage.getApprovedDocsBySessionId(req.params.sessionId);
+      res.json(approvedDocs);
+    } catch (error) {
+      console.error("Error fetching approved docs:", error);
+      res.status(500).json({ message: "Failed to fetch approved documentation" });
+    }
+  });
+
+  app.post('/api/sessions/:sessionId/approved-docs', async (req: any, res) => {
+    const userId = requireAuth(req, res);
+    if (!userId) return;
+
+    try {
+      // Verify session ownership
+      const session = await storage.getSession(req.params.sessionId);
+      if (!session) {
+        return res.status(404).json({ message: "Session not found" });
+      }
+      
+      const customer = await storage.getCustomer(session.customerId);
+      if (!customer || customer.userId !== userId) {
+        return res.status(403).json({ message: "Forbidden: You do not own this session" });
+      }
+
+      const validated = insertApprovedDocumentationSchema.parse({
+        ...req.body,
+        sessionId: req.params.sessionId,
+        approvedBy: userId
+      });
+      const approvedDoc = await storage.approveDocumentation(validated);
+      res.status(201).json(approvedDoc);
+    } catch (error) {
+      console.error("Error approving documentation:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Validation error", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to approve documentation" });
+    }
+  });
+
+  app.delete('/api/sessions/:sessionId/approved-docs/:docId', async (req: any, res) => {
+    const userId = requireAuth(req, res);
+    if (!userId) return;
+
+    try {
+      // Verify session ownership
+      const session = await storage.getSession(req.params.sessionId);
+      if (!session) {
+        return res.status(404).json({ message: "Session not found" });
+      }
+      
+      const customer = await storage.getCustomer(session.customerId);
+      if (!customer || customer.userId !== userId) {
+        return res.status(403).json({ message: "Forbidden: You do not own this session" });
+      }
+
+      await storage.removeApprovedDoc(req.params.sessionId, req.params.docId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error removing approved doc:", error);
+      res.status(500).json({ message: "Failed to remove approved documentation" });
     }
   });
 

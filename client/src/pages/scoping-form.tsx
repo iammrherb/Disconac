@@ -9,9 +9,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Save, Download, CheckCircle, List } from "lucide-react";
 import { Link } from "wouter";
-import type { ScopingSession, DeploymentChecklist } from "@shared/schema";
+import type { ScopingSession, DeploymentChecklist, QuestionnaireResponse } from "@shared/schema";
 import { questionnaireConfig } from "@/constants/questionnaireConfig";
 import { SectionRenderer } from "@/components/SectionRenderer";
+import { DocumentationReviewDialog } from "@/components/DocumentationReviewDialog";
 
 export default function ScopingForm() {
   const { id } = useParams();
@@ -19,6 +20,7 @@ export default function ScopingForm() {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState(questionnaireConfig[0].id);
   const [isCreatingSession, setIsCreatingSession] = useState(false);
+  const [showReviewDialog, setShowReviewDialog] = useState(false);
   
   // Initialize form data with all field IDs from configuration
   const initializeFormData = () => {
@@ -57,11 +59,18 @@ export default function ScopingForm() {
     enabled: !!id && id !== "new",
   });
 
+  const { data: responses } = useQuery<QuestionnaireResponse[]>({
+    queryKey: [`/api/sessions/${id}/responses`],
+    enabled: !!id && id !== "new",
+  });
+
   const saveMutation = useMutation({
     mutationFn: async (data: any) => {
       return await apiRequest("PUT", `/api/sessions/${id}/responses`, data);
     },
     onSuccess: () => {
+      // Invalidate responses cache to ensure fresh data for documentation recommendations
+      queryClient.invalidateQueries({ queryKey: [`/api/sessions/${id}/responses`] });
       toast({
         title: "Success",
         description: "Scoping data saved successfully",
@@ -105,12 +114,17 @@ export default function ScopingForm() {
   };
 
   const handleGenerateChecklist = () => {
-    // First save, then generate
+    // First save, then show review dialog
     saveMutation.mutate(formData, {
       onSuccess: () => {
-        generateChecklistMutation.mutate(formData);
+        setShowReviewDialog(true);
       }
     });
+  };
+
+  const handleApprovalComplete = () => {
+    setShowReviewDialog(false);
+    generateChecklistMutation.mutate(formData);
   };
 
   if (sessionLoading) {
@@ -229,6 +243,14 @@ export default function ScopingForm() {
           </div>
         </CardContent>
       </Card>
+
+      <DocumentationReviewDialog
+        open={showReviewDialog}
+        onOpenChange={setShowReviewDialog}
+        sessionId={id || ""}
+        responses={responses}
+        onApprovalComplete={handleApprovalComplete}
+      />
     </div>
   );
 }

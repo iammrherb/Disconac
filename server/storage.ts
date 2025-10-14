@@ -6,6 +6,7 @@ import {
   questionnaireResponses,
   documentationLinks,
   deploymentChecklists,
+  approvedDocumentation,
   appSettings,
   checklistTemplates,
   checklistItemsTemplate,
@@ -26,6 +27,8 @@ import {
   type InsertDocumentationLink,
   type DeploymentChecklist,
   type InsertDeploymentChecklist,
+  type ApprovedDocumentation,
+  type InsertApprovedDocumentation,
   type AppSetting,
   type InsertAppSetting,
   type ChecklistTemplate,
@@ -137,6 +140,11 @@ export interface IStorage {
   createMilestoneTask(task: Omit<InsertMilestoneTask, "id">): Promise<MilestoneTask>;
   updateMilestoneTask(id: string, data: Partial<InsertMilestoneTask>): Promise<MilestoneTask | undefined>;
   deleteMilestoneTask(id: string): Promise<void>;
+
+  // Approved documentation operations
+  getApprovedDocsBySessionId(sessionId: string): Promise<(ApprovedDocumentation & { documentation: DocumentationLink })[]>;
+  approveDocumentation(data: Omit<InsertApprovedDocumentation, "id">): Promise<ApprovedDocumentation>;
+  removeApprovedDoc(sessionId: string, documentationId: string): Promise<void>;
 
   // Settings operations
   getSetting(key: string): Promise<AppSetting | undefined>;
@@ -713,6 +721,66 @@ export class DatabaseStorage implements IStorage {
 
   async deleteMilestoneTask(id: string): Promise<void> {
     await db.delete(milestoneTasks).where(eq(milestoneTasks.id, id));
+  }
+
+  // ========== Approved Documentation Operations ==========
+  
+  async getApprovedDocsBySessionId(sessionId: string): Promise<(ApprovedDocumentation & { documentation: DocumentationLink })[]> {
+    const results = await db.select({
+      id: approvedDocumentation.id,
+      sessionId: approvedDocumentation.sessionId,
+      documentationId: approvedDocumentation.documentationId,
+      approved: approvedDocumentation.approved,
+      reviewNotes: approvedDocumentation.reviewNotes,
+      approvedAt: approvedDocumentation.approvedAt,
+      approvedBy: approvedDocumentation.approvedBy,
+      documentation: documentationLinks,
+    })
+      .from(approvedDocumentation)
+      .innerJoin(
+        documentationLinks,
+        eq(approvedDocumentation.documentationId, documentationLinks.id)
+      )
+      .where(eq(approvedDocumentation.sessionId, sessionId));
+    
+    return results.map(r => ({
+      id: r.id,
+      sessionId: r.sessionId,
+      documentationId: r.documentationId,
+      approved: r.approved,
+      reviewNotes: r.reviewNotes,
+      approvedAt: r.approvedAt,
+      approvedBy: r.approvedBy,
+      documentation: r.documentation,
+    }));
+  }
+
+  async approveDocumentation(data: Omit<InsertApprovedDocumentation, "id">): Promise<ApprovedDocumentation> {
+    const [result] = await db
+      .insert(approvedDocumentation)
+      .values(data)
+      .onConflictDoUpdate({
+        target: [approvedDocumentation.sessionId, approvedDocumentation.documentationId],
+        set: {
+          approved: data.approved,
+          reviewNotes: data.reviewNotes,
+          approvedBy: data.approvedBy,
+          approvedAt: new Date(),
+        },
+      })
+      .returning();
+    return result;
+  }
+
+  async removeApprovedDoc(sessionId: string, documentationId: string): Promise<void> {
+    await db
+      .delete(approvedDocumentation)
+      .where(
+        and(
+          eq(approvedDocumentation.sessionId, sessionId),
+          eq(approvedDocumentation.documentationId, documentationId)
+        )
+      );
   }
 }
 
