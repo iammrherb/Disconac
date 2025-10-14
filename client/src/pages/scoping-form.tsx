@@ -16,6 +16,10 @@ import { DocumentationReviewDialog } from "@/components/DocumentationReviewDialo
 import { AIRecommendationsDialog } from "@/components/AIRecommendationsDialog";
 import { ExportActions } from "@/components/ExportActions";
 import { ContextualSuggestions } from "@/components/ContextualSuggestions";
+import { isFieldRequiredForMode, type AssessmentMode, getCompletionPercentage } from "@/constants/assessmentModes";
+import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { AssessmentModeSelector } from "@/components/AssessmentModeSelector";
 
 export default function ScopingForm() {
   const { id } = useParams();
@@ -25,9 +29,9 @@ export default function ScopingForm() {
   const [isCreatingSession, setIsCreatingSession] = useState(false);
   const [showReviewDialog, setShowReviewDialog] = useState(false);
   const [showAIDialog, setShowAIDialog] = useState(false);
+  const [showModeSwitcher, setShowModeSwitcher] = useState(false);
   const [focusedField, setFocusedField] = useState<string>("");
   
-  // Initialize form data with all field IDs from configuration
   const initializeFormData = () => {
     const data: Record<string, any> = {};
     questionnaireConfig.forEach(tab => {
@@ -42,7 +46,6 @@ export default function ScopingForm() {
 
   const [formData, setFormData] = useState(initializeFormData());
 
-  // Redirect to sessions page if trying to access /scoping/new directly
   useEffect(() => {
     if (id === "new") {
       toast({
@@ -58,6 +61,20 @@ export default function ScopingForm() {
     queryKey: [`/api/sessions/${id}`],
     enabled: !!id && id !== "new",
   });
+
+  const assessmentMode = (session?.assessmentMode || "standard") as AssessmentMode;
+
+  const filteredQuestionnaireConfig = questionnaireConfig.map(tab => ({
+    ...tab,
+    sections: tab.sections.map(section => ({
+      ...section,
+      fields: section.fields.filter(field => 
+        isFieldRequiredForMode(field.id, assessmentMode)
+      )
+    })).filter(section => section.fields.length > 0)
+  })).filter(tab => tab.sections.length > 0);
+
+  const completionPercentage = getCompletionPercentage(formData, assessmentMode);
 
   const { data: checklist } = useQuery<DeploymentChecklist[]>({
     queryKey: [`/api/sessions/${id}/checklist`],
@@ -159,10 +176,28 @@ export default function ScopingForm() {
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-semibold tracking-tight">
-            {id === "new" ? "New Scoping Session" : session?.sessionName}
-          </h1>
-          <p className="text-muted-foreground mt-1">
+          <div className="flex items-center gap-3 mb-2">
+            <h1 className="text-3xl font-semibold tracking-tight">
+              {id === "new" ? "New Scoping Session" : session?.sessionName}
+            </h1>
+            {session?.assessmentMode && (
+              <Badge variant={
+                assessmentMode === "quick" ? "secondary" : 
+                assessmentMode === "deep-dive" ? "default" : 
+                "outline"
+              }>
+                {assessmentMode === "quick" ? "Quick" : 
+                 assessmentMode === "standard" ? "Standard" : 
+                 "Deep-Dive"} Assessment
+              </Badge>
+            )}
+            {completionPercentage > 0 && (
+              <Badge variant="outline">
+                {completionPercentage}% Complete
+              </Badge>
+            )}
+          </div>
+          <p className="text-muted-foreground">
             Complete the comprehensive discovery questionnaire to assess customer environment
           </p>
         </div>
@@ -189,14 +224,14 @@ export default function ScopingForm() {
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-6 lg:w-auto">
-          {questionnaireConfig.map((tab) => (
+          {filteredQuestionnaireConfig.map((tab) => (
             <TabsTrigger key={tab.id} value={tab.id} data-testid={`tab-${tab.id}`}>
               {tab.label}
             </TabsTrigger>
           ))}
         </TabsList>
 
-        {questionnaireConfig.map((tab) => (
+        {filteredQuestionnaireConfig.map((tab) => (
           <TabsContent key={tab.id} value={tab.id} className="space-y-4">
             <Accordion type="multiple" className="space-y-4" defaultValue={tab.sections.map(s => s.id)}>
               {tab.sections.map((section) => (

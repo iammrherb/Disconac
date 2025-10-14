@@ -7,10 +7,14 @@ export const quickAssessmentFields = [
   "totalEmployees",
   "totalSites",
   
+  "identityProviders",
+  "primaryIdP",
+  
   "deviceTypes",
   "totalDeviceCount",
   "byodPolicy",
   
+  // Network - Primary vendors only
   "wiredSwitchVendors",
   "wirelessVendors",
   "switchCount",
@@ -18,6 +22,9 @@ export const quickAssessmentFields = [
   
   "deploymentType",
   "deploymentLocations",
+  
+  "currentNacVendor",
+  "migrationScenario",
 ];
 
 export const standardAssessmentFields = [
@@ -25,11 +32,10 @@ export const standardAssessmentFields = [
   
   "regions",
   
-  "identityProviders",
-  "primaryIdP",
   "authenticationTypes",
   "mfaProviders",
   "ssoProviders",
+  "samlApplications",
   
   "edrXdrVendors",
   "mdmVendors",
@@ -45,21 +51,33 @@ export const standardAssessmentFields = [
   "byodOnboardingMethod",
   "byodNetworkSegmentation",
   
-  // Network Infrastructure
   "vpnVendors",
   "ssidCount",
+  "tacacsVendors",
+  "tacacsAdminCount",
+  "tacacsDeviceCount",
   
   "virtualizationPlatforms",
   "cloudProviders",
   "nacDeployment",
   "radiusDeployment",
+  
+  "ztnaHostedApps",
+  "ztnaUserCount",
+  "ztnaDeploymentMode",
+  
+  "currentNacVersion",
+  "currentNacFeatures",
+  "projectTimeline",
+  "implementationApproach",
+  "pocRequired",
+  
+  "complianceFrameworks",
+  "securityRequirements",
 ];
 
 export const deepDiveAssessmentFields = [
   ...standardAssessmentFields,
-  
-  "certificateAuthority",
-  "samlApplications",
   
   "expectedGuestCount",
   "contractorAccessEnabled",
@@ -75,9 +93,6 @@ export const deepDiveAssessmentFields = [
   "captivePortalRedirect",
   
   "vpnUserCount",
-  "tacacsVendors",
-  "tacacsAdminCount",
-  "tacacsDeviceCount",
   
   "preferredVirtualization",
   "containerPlatforms",
@@ -86,9 +101,40 @@ export const deepDiveAssessmentFields = [
   "siemCollectorDeployment",
   "iotFingerprintingDeployment",
   
-  // ZTNA
-  "ztnaHostedApps",
-  "ztnaRequirements",
+  "ztnaRegions",
+  "ztnaClientless",
+  "ztnaAccessTypes",
+  "ztnaIdentityProvider",
+  
+  "nacMigrationChallenges",
+  "pocScope",
+  
+  "certificateAuthority",
+  "certificateTypes",
+  "certificateLifecycle",
+  "eapMethods",
+  "radiusAttributes",
+  "dynamicVlanAssignment",
+  "macAuthBypass",
+  
+  "tacacsEnabled",
+  "tacacsDeviceTypes",
+  "tacacsCommandAuthorization",
+  "tacacsAccounting",
+  "tacacsRoleBased",
+  "tacacsChangeWindow",
+  
+  "auditFrequency",
+  "auditReporting",
+  "dataResidency",
+  "encryptionRequirements",
+  
+  "apiIntegrations",
+  "webhookRequirements",
+  "customIntegrations",
+  "automationTools",
+  "infraAsCode",
+  "cicdIntegration",
 ];
 
 export function getFieldsForMode(mode: AssessmentMode): string[] {
