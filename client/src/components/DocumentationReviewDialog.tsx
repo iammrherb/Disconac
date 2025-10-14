@@ -43,7 +43,7 @@ export function DocumentationReviewDialog({
       }, {} as Record<string, any>);
       
       const result = await apiRequest("POST", "/api/documentation/recommendations", responsesObj);
-      return result as unknown as DocumentationLink[];
+      return await result.json();
     },
     enabled: open && !!responses && responses.length > 0,
   });
