@@ -18,6 +18,13 @@ import {
   insertProjectMilestoneSchema,
   insertMilestoneTaskSchema
 } from "@shared/schema";
+import { 
+  generateAIRecommendations, 
+  generateBestPractices, 
+  generateImplementationGuide,
+  generateMigrationRecommendations
+} from "./ai-service";
+import { generatePDF, generateWord } from "./export-service";
 
 // Helper function to get authenticated user ID from request
 function getUserId(req: any): string | null {
@@ -1320,6 +1327,199 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error removing approved doc:", error);
       res.status(500).json({ message: "Failed to remove approved documentation" });
+    }
+  });
+
+  // ========== AI Recommendation Routes ==========
+
+  app.post('/api/sessions/:sessionId/ai-recommendations', async (req: any, res) => {
+    const userId = requireAuth(req, res);
+    if (!userId) return;
+
+    try {
+      // Verify session ownership
+      const session = await storage.getSession(req.params.sessionId);
+      if (!session) {
+        return res.status(404).json({ message: "Session not found" });
+      }
+      
+      const customer = await storage.getCustomer(session.customerId);
+      if (!customer || customer.userId !== userId) {
+        return res.status(403).json({ message: "Forbidden: You do not own this session" });
+      }
+
+      // Get questionnaire responses
+      const responses = await storage.getResponsesBySessionId(req.params.sessionId);
+      
+      // Convert responses to questionnaire data format
+      const questionnaireData = responses.reduce((acc: Record<string, any>, resp) => {
+        acc[resp.question] = resp.response;
+        return acc;
+      }, {} as Record<string, any>);
+
+      // Generate AI recommendations
+      const recommendations = await generateAIRecommendations(
+        questionnaireData,
+        customer.companyName
+      );
+
+      res.json(recommendations);
+    } catch (error) {
+      console.error("Error generating AI recommendations:", error);
+      res.status(500).json({ message: "Failed to generate AI recommendations" });
+    }
+  });
+
+  app.post('/api/sessions/:sessionId/best-practices', async (req: any, res) => {
+    const userId = requireAuth(req, res);
+    if (!userId) return;
+
+    try {
+      // Verify session ownership
+      const session = await storage.getSession(req.params.sessionId);
+      if (!session) {
+        return res.status(404).json({ message: "Session not found" });
+      }
+      
+      const customer = await storage.getCustomer(session.customerId);
+      if (!customer || customer.userId !== userId) {
+        return res.status(403).json({ message: "Forbidden: You do not own this session" });
+      }
+
+      // Get questionnaire responses
+      const responses = await storage.getResponsesBySessionId(req.params.sessionId);
+      
+      // Convert responses to questionnaire data format
+      const questionnaireData = responses.reduce((acc: Record<string, any>, resp) => {
+        acc[resp.question] = resp.response;
+        return acc;
+      }, {} as Record<string, any>);
+
+      // Generate best practices
+      const bestPractices = await generateBestPractices(questionnaireData);
+
+      res.json(bestPractices);
+    } catch (error) {
+      console.error("Error generating best practices:", error);
+      res.status(500).json({ message: "Failed to generate best practices" });
+    }
+  });
+
+  app.post('/api/sessions/:sessionId/implementation-guide', async (req: any, res) => {
+    const userId = requireAuth(req, res);
+    if (!userId) return;
+
+    try {
+      // Verify session ownership
+      const session = await storage.getSession(req.params.sessionId);
+      if (!session) {
+        return res.status(404).json({ message: "Session not found" });
+      }
+      
+      const customer = await storage.getCustomer(session.customerId);
+      if (!customer || customer.userId !== userId) {
+        return res.status(403).json({ message: "Forbidden: You do not own this session" });
+      }
+
+      // Get questionnaire responses
+      const responses = await storage.getResponsesBySessionId(req.params.sessionId);
+      
+      // Convert responses to questionnaire data format
+      const questionnaireData = responses.reduce((acc: Record<string, any>, resp) => {
+        acc[resp.question] = resp.response;
+        return acc;
+      }, {} as Record<string, any>);
+
+      // Generate implementation guide
+      const guide = await generateImplementationGuide(
+        questionnaireData,
+        customer.companyName
+      );
+
+      res.json(guide);
+    } catch (error) {
+      console.error("Error generating implementation guide:", error);
+      res.status(500).json({ message: "Failed to generate implementation guide" });
+    }
+  });
+
+  // ========== Export Routes ==========
+
+  app.get('/api/sessions/:sessionId/export/pdf', async (req: any, res) => {
+    const userId = requireAuth(req, res);
+    if (!userId) return;
+
+    try {
+      // Verify session ownership
+      const session = await storage.getSession(req.params.sessionId);
+      if (!session) {
+        return res.status(404).json({ message: "Session not found" });
+      }
+      
+      const customer = await storage.getCustomer(session.customerId);
+      if (!customer || customer.userId !== userId) {
+        return res.status(403).json({ message: "Forbidden: You do not own this session" });
+      }
+
+      // Get all session data
+      const responses = await storage.getResponsesBySessionId(req.params.sessionId);
+      const checklist = await storage.getChecklistBySessionId(req.params.sessionId);
+      const approvedDocs = await storage.getApprovedDocsBySessionId(req.params.sessionId);
+
+      // Generate PDF
+      const pdfBuffer = await generatePDF({
+        session: { ...session, customer },
+        responses,
+        checklist,
+        recommendedDocs: approvedDocs,
+      });
+
+      // Set response headers for file download
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="Portnox-Deployment-Guide-${customer.companyName.replace(/[^a-zA-Z0-9]/g, '-')}.pdf"`);
+      res.send(pdfBuffer);
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      res.status(500).json({ message: "Failed to generate PDF" });
+    }
+  });
+
+  app.get('/api/sessions/:sessionId/export/word', async (req: any, res) => {
+    const userId = requireAuth(req, res);
+    if (!userId) return;
+
+    try {
+      // Verify session ownership
+      const session = await storage.getSession(req.params.sessionId);
+      if (!session) {
+        return res.status(404).json({ message: "Session not found" });
+      }
+      
+      const customer = await storage.getCustomer(session.customerId);
+      if (!customer || customer.userId !== userId) {
+        return res.status(403).json({ message: "Forbidden: You do not own this session" });
+      }
+
+      // Get all session data
+      const responses = await storage.getResponsesBySessionId(req.params.sessionId);
+      const checklist = await storage.getChecklistBySessionId(req.params.sessionId);
+      const approvedDocs = await storage.getApprovedDocsBySessionId(req.params.sessionId);
+
+      // Generate Word document
+      const wordBuffer = await generateWord({
+        session: { ...session, customer },
+        responses,
+        checklist,
+        recommendedDocs: approvedDocs,
+      });
+
+      // Set response headers for file download
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+      res.setHeader('Content-Disposition', `attachment; filename="Portnox-Deployment-Guide-${customer.companyName.replace(/[^a-zA-Z0-9]/g, '-')}.docx"`);
+      res.send(wordBuffer);
+    } catch (error) {
+      console.error("Error generating Word document:", error);
+      res.status(500).json({ message: "Failed to generate Word document" });
     }
   });
 
