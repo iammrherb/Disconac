@@ -15,6 +15,7 @@ import { SectionRenderer } from "@/components/SectionRenderer";
 import { DocumentationReviewDialog } from "@/components/DocumentationReviewDialog";
 import { AIRecommendationsDialog } from "@/components/AIRecommendationsDialog";
 import { ExportActions } from "@/components/ExportActions";
+import { ContextualSuggestions } from "@/components/ContextualSuggestions";
 
 export default function ScopingForm() {
   const { id } = useParams();
@@ -24,6 +25,7 @@ export default function ScopingForm() {
   const [isCreatingSession, setIsCreatingSession] = useState(false);
   const [showReviewDialog, setShowReviewDialog] = useState(false);
   const [showAIDialog, setShowAIDialog] = useState(false);
+  const [focusedField, setFocusedField] = useState<string>("");
   
   // Initialize form data with all field IDs from configuration
   const initializeFormData = () => {
@@ -110,6 +112,7 @@ export default function ScopingForm() {
 
   const handleFieldChange = (fieldId: string, value: any) => {
     setFormData(prev => ({ ...prev, [fieldId]: value }));
+    setFocusedField(fieldId);
   };
 
   const handleSave = () => {
@@ -206,12 +209,20 @@ export default function ScopingForm() {
                       </div>
                     </AccordionTrigger>
                     <AccordionContent>
-                      <CardContent className="pt-6">
+                      <CardContent className="pt-6 space-y-4">
                         <SectionRenderer
                           fields={section.fields}
                           formData={formData}
                           onFieldChange={handleFieldChange}
                         />
+                        {focusedField && section.fields.some(f => f.id === focusedField) && (
+                          <ContextualSuggestions
+                            currentField={focusedField}
+                            currentValue={formData[focusedField]}
+                            allResponses={formData}
+                            onApplyActionable={(fieldId, value) => handleFieldChange(fieldId, value)}
+                          />
+                        )}
                       </CardContent>
                     </AccordionContent>
                   </Card>

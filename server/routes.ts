@@ -25,6 +25,7 @@ import {
   generateMigrationRecommendations
 } from "./ai-service";
 import { generatePDF, generateWord } from "./export-service";
+import { exportWithTemplate, type ExportTemplate } from "./export-templates";
 
 // Helper function to get authenticated user ID from request
 function getUserId(req: any): string | null {
@@ -1727,6 +1728,62 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error generating Word document:", error);
       res.status(500).json({ message: "Failed to generate Word document" });
+    }
+  });
+
+  app.get('/api/sessions/:sessionId/export/:template', async (req: any, res) => {
+    const userId = requireAuth(req, res);
+    if (!userId) return;
+
+    try {
+      const template = req.params.template as ExportTemplate;
+      const validTemplates: ExportTemplate[] = ['comprehensive', 'executive', 'technical', 'checklist-only'];
+      
+      if (!validTemplates.includes(template)) {
+        return res.status(400).json({ message: "Invalid template type" });
+      }
+
+      // Verify session ownership
+      const session = await storage.getSession(req.params.sessionId);
+      if (!session) {
+        return res.status(404).json({ message: "Session not found" });
+      }
+      
+      const customer = await storage.getCustomer(session.customerId);
+      if (!customer || customer.userId !== userId) {
+        return res.status(403).json({ message: "Forbidden: You do not own this session" });
+      }
+
+      // Get all session data
+      const responses = await storage.getResponsesBySessionId(req.params.sessionId);
+      const checklist = await storage.getChecklistBySessionId(req.params.sessionId);
+      const approvedDocs = await storage.getApprovedDocsBySessionId(req.params.sessionId);
+
+      // Generate export with template
+      const exportBuffer = await exportWithTemplate({
+        session: { ...session, customer },
+        responses,
+        checklist,
+        recommendedDocs: approvedDocs,
+      }, template);
+
+      // Determine filename based on template
+      const templateNames = {
+        'executive': 'Executive-Summary',
+        'technical': 'Technical-Deep-Dive',
+        'checklist-only': 'Checklist',
+        'comprehensive': 'Deployment-Guide'
+      };
+      const templateName = templateNames[template] || 'Export';
+      const filename = `Portnox-${templateName}-${customer.companyName.replace(/[^a-zA-Z0-9]/g, '-')}.pdf`;
+
+      // Set response headers for file download
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      res.send(exportBuffer);
+    } catch (error) {
+      console.error("Error generating export:", error);
+      res.status(500).json({ message: "Failed to generate export" });
     }
   });
 
