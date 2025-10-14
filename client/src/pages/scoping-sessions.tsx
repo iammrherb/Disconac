@@ -10,8 +10,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { FileText, Plus, Calendar, Building2 } from "lucide-react";
 import { Link } from "wouter";
-import { CustomerSelectionDialog } from "@/components/CustomerSelectionDialog";
+import { SessionCreationDialog } from "@/components/SessionCreationDialog";
 import type { ScopingSession } from "@shared/schema";
+import type { AssessmentMode } from "@/components/AssessmentModeSelector";
 
 export default function ScopingSessions() {
   const { toast } = useToast();
@@ -37,12 +38,13 @@ export default function ScopingSessions() {
     enabled: isAuthenticated,
   });
 
-  const createSessionMutation = useMutation<ScopingSession, Error, string>({
-    mutationFn: async (customerId: string) => {
+  const createSessionMutation = useMutation<ScopingSession, Error, { customerId: string; assessmentMode: AssessmentMode }>({
+    mutationFn: async ({ customerId, assessmentMode }) => {
       const res = await apiRequest("POST", "/api/sessions", {
         customerId,
         sessionName: `Scoping Session - ${new Date().toLocaleDateString()}`,
         status: "draft",
+        assessmentMode,
       });
       return await res.json();
     },
@@ -73,8 +75,8 @@ export default function ScopingSessions() {
     },
   });
 
-  const handleCustomerSelected = (customerId: string) => {
-    createSessionMutation.mutate(customerId);
+  const handleSessionCreate = (customerId: string, assessmentMode: AssessmentMode) => {
+    createSessionMutation.mutate({ customerId, assessmentMode });
   };
 
   const getStatusBadge = (status: string) => {
@@ -189,10 +191,10 @@ export default function ScopingSessions() {
         </div>
       )}
 
-      <CustomerSelectionDialog
+      <SessionCreationDialog
         open={dialogOpen}
         onOpenChange={setDialogOpen}
-        onCustomerSelected={handleCustomerSelected}
+        onSessionCreate={handleSessionCreate}
       />
     </div>
   );
