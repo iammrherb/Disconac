@@ -7,12 +7,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Save, Download, CheckCircle, List } from "lucide-react";
+import { Save, Download, CheckCircle, List, Sparkles } from "lucide-react";
 import { Link } from "wouter";
 import type { ScopingSession, DeploymentChecklist, QuestionnaireResponse } from "@shared/schema";
 import { questionnaireConfig } from "@/constants/questionnaireConfig";
 import { SectionRenderer } from "@/components/SectionRenderer";
 import { DocumentationReviewDialog } from "@/components/DocumentationReviewDialog";
+import { AIRecommendationsDialog } from "@/components/AIRecommendationsDialog";
+import { ExportActions } from "@/components/ExportActions";
 
 export default function ScopingForm() {
   const { id } = useParams();
@@ -21,6 +23,7 @@ export default function ScopingForm() {
   const [activeTab, setActiveTab] = useState(questionnaireConfig[0].id);
   const [isCreatingSession, setIsCreatingSession] = useState(false);
   const [showReviewDialog, setShowReviewDialog] = useState(false);
+  const [showAIDialog, setShowAIDialog] = useState(false);
   
   // Initialize form data with all field IDs from configuration
   const initializeFormData = () => {
@@ -165,10 +168,19 @@ export default function ScopingForm() {
             <Save className="h-4 w-4 mr-2" />
             {saveMutation.isPending ? "Saving..." : "Save Progress"}
           </Button>
-          <Button variant="outline" data-testid="button-export">
-            <Download className="h-4 w-4 mr-2" />
-            Export
-          </Button>
+          {id && id !== "new" && (
+            <>
+              <Button 
+                variant="outline" 
+                onClick={() => setShowAIDialog(true)}
+                data-testid="button-ai-recommendations"
+              >
+                <Sparkles className="h-4 w-4 mr-2" />
+                AI Insights
+              </Button>
+              <ExportActions sessionId={id} companyName={session?.sessionName} />
+            </>
+          )}
         </div>
       </div>
 
@@ -251,6 +263,14 @@ export default function ScopingForm() {
         responses={responses}
         onApprovalComplete={handleApprovalComplete}
       />
+
+      {id && id !== "new" && (
+        <AIRecommendationsDialog
+          sessionId={id}
+          open={showAIDialog}
+          onOpenChange={setShowAIDialog}
+        />
+      )}
     </div>
   );
 }
