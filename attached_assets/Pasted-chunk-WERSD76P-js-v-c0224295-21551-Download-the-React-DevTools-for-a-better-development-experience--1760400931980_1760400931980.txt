@@ -1,0 +1,57 @@
+chunk-WERSD76P.js?v=c0224295:21551 Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+DocumentationReviewDialog.tsx:173 Uncaught TypeError: recommendedDocs.map is not a function
+    at DocumentationReviewDialog (DocumentationReviewDialog.tsx:173:30)
+    at renderWithHooks (chunk-WERSD76P.js?v=c0224295:11548:26)
+    at updateFunctionComponent (chunk-WERSD76P.js?v=c0224295:14582:28)
+    at beginWork (chunk-WERSD76P.js?v=c0224295:15924:22)
+    at HTMLUnknownElement.callCallback2 (chunk-WERSD76P.js?v=c0224295:3674:22)
+    at Object.invokeGuardedCallbackDev (chunk-WERSD76P.js?v=c0224295:3699:24)
+    at invokeGuardedCallback (chunk-WERSD76P.js?v=c0224295:3733:39)
+    at beginWork$1 (chunk-WERSD76P.js?v=c0224295:19765:15)
+    at performUnitOfWork (chunk-WERSD76P.js?v=c0224295:19198:20)
+    at workLoopSync (chunk-WERSD76P.js?v=c0224295:19137:13)
+DocumentationReviewDialog.tsx:173 Uncaught TypeError: recommendedDocs.map is not a function
+    at DocumentationReviewDialog (DocumentationReviewDialog.tsx:173:30)
+    at renderWithHooks (chunk-WERSD76P.js?v=c0224295:11548:26)
+    at updateFunctionComponent (chunk-WERSD76P.js?v=c0224295:14582:28)
+    at beginWork (chunk-WERSD76P.js?v=c0224295:15924:22)
+    at HTMLUnknownElement.callCallback2 (chunk-WERSD76P.js?v=c0224295:3674:22)
+    at Object.invokeGuardedCallbackDev (chunk-WERSD76P.js?v=c0224295:3699:24)
+    at invokeGuardedCallback (chunk-WERSD76P.js?v=c0224295:3733:39)
+    at beginWork$1 (chunk-WERSD76P.js?v=c0224295:19765:15)
+    at performUnitOfWork (chunk-WERSD76P.js?v=c0224295:19198:20)
+    at workLoopSync (chunk-WERSD76P.js?v=c0224295:19137:13)
+host-console-events.js:1 The above error occurred in the <DocumentationReviewDialog> component:
+
+    at DocumentationReviewDialog (https://70b4700c-8fb8-455f-805e-daf282366511-00-169r6noawynit.worf.replit.dev/src/components/DocumentationReviewDialog.tsx:31:3)
+    at div
+    at ScopingForm (https://70b4700c-8fb8-455f-805e-daf282366511-00-169r6noawynit.worf.replit.dev/src/pages/scoping-form.tsx?t=1760400295606:34:18)
+    at Route (https://70b4700c-8fb8-455f-805e-daf282366511-00-169r6noawynit.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=c0224295:323:16)
+    at Switch (https://70b4700c-8fb8-455f-805e-daf282366511-00-169r6noawynit.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=c0224295:379:17)
+    at Router (https://70b4700c-8fb8-455f-805e-daf282366511-00-169r6noawynit.worf.replit.dev/src/App.tsx?t=1760400295606&v=980cDLcUdqWFea3YgctRf:37:42)
+    at main
+    at div
+    at div
+    at Provider (https://70b4700c-8fb8-455f-805e-daf282366511-00-169r6noawynit.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-MNSHGHEV.js?v=c0224295:43:15)
+    at TooltipProvider (https://70b4700c-8fb8-455f-805e-daf282366511-00-169r6noawynit.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=c0224295:63:5)
+    at SidebarProvider (https://70b4700c-8fb8-455f-805e-daf282366511-00-169r6noawynit.worf.replit.dev/src/components/ui/sidebar.tsx:59:3)
+    at AppContent (https://70b4700c-8fb8-455f-805e-daf282366511-00-169r6noawynit.worf.replit.dev/src/App.tsx?t=1760400295606&v=980cDLcUdqWFea3YgctRf:101:42)
+    at Provider (https://70b4700c-8fb8-455f-805e-daf282366511-00-169r6noawynit.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-MNSHGHEV.js?v=c0224295:43:15)
+    at TooltipProvider (https://70b4700c-8fb8-455f-805e-daf282366511-00-169r6noawynit.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=c0224295:63:5)
+    at QueryClientProvider (https://70b4700c-8fb8-455f-805e-daf282366511-00-169r6noawynit.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=c0224295:2805:3)
+    at App
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries.
+(anonymous) @ host-console-events.js:1
+chunk-WERSD76P.js?v=c0224295:9129 Uncaught TypeError: recommendedDocs.map is not a function
+    at DocumentationReviewDialog (DocumentationReviewDialog.tsx:173:30)
+    at renderWithHooks (chunk-WERSD76P.js?v=c0224295:11548:26)
+    at updateFunctionComponent (chunk-WERSD76P.js?v=c0224295:14582:28)
+    at beginWork (chunk-WERSD76P.js?v=c0224295:15924:22)
+    at beginWork$1 (chunk-WERSD76P.js?v=c0224295:19753:22)
+    at performUnitOfWork (chunk-WERSD76P.js?v=c0224295:19198:20)
+    at workLoopSync (chunk-WERSD76P.js?v=c0224295:19137:13)
+    at renderRootSync (chunk-WERSD76P.js?v=c0224295:19116:15)
+    at recoverFromConcurrentError (chunk-WERSD76P.js?v=c0224295:18736:28)
+    at performSyncWorkOnRoot (chunk-WERSD76P.js?v=c0224295:18879:28)

@@ -170,7 +170,7 @@ export function DocumentationReviewDialog({
 
         <ScrollArea className="max-h-[50vh] pr-4">
           <div className="space-y-3">
-            {recommendedDocs.map((doc) => (
+            {(recommendedDocs || []).map((doc) => (
               <div
                 key={doc.id}
                 className={`p-4 rounded-lg border transition-all ${

@@ -42,15 +42,15 @@ export default function ScopingForm() {
     if (id === "new") {
       toast({
         title: "Invalid Access",
-        description: "Please create a scoping session from the Sessions page",
+        description: "Please create a scoping session from the Scoping Sessions page",
         variant: "destructive",
       });
-      setLocation("/sessions");
+      setLocation("/scoping");
     }
   }, [id, toast, setLocation]);
 
   const { data: session, isLoading: sessionLoading } = useQuery<ScopingSession>({
-    queryKey: ["/api/sessions", id],
+    queryKey: [`/api/sessions/${id}`],
     enabled: !!id && id !== "new",
   });
 
