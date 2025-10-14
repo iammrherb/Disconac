@@ -8,6 +8,21 @@ The tool features a questionnaire-based scoping workflow that collects informati
 
 ## Recent Changes (October 2025)
 
+**Critical Bug Fixes and Archive Functionality (October 14, 2025):**
+- **Fixed Dashboard Navigation Bug:** Corrected redirect path from `/sessions` to `/scoping` when clicking scoping session links on dashboard
+- **Fixed DocumentationReviewDialog Crash:** Added proper JSON parsing (`await result.json()`) instead of returning Response object, preventing ".map is not a function" error
+- **Implemented Archive Functionality:** Added soft-delete pattern for customers and sessions using `isArchived` boolean field
+  - Added `isArchived` field to `customerProfiles` and `scopingSessions` tables (default: false)
+  - Storage methods automatically filter out archived items by default (optional `includeArchived` parameter)
+  - API endpoints: POST `/api/customers/:id/archive`, POST `/api/customers/:id/unarchive`, POST `/api/sessions/:id/archive`, POST `/api/sessions/:id/unarchive`
+  - All endpoints return `{success: true}` and include authentication/authorization verification
+- **Enhanced Documentation Recommendations:** Expanded field mappings from questionnaire to documentation tags
+  - Added 30+ questionnaire field mappings covering Identity, Endpoints, Network Infrastructure, Deployment, and ZTNA categories
+  - Vendor-specific tags: microsoft, cisco, vmware, aws, azure, hyper-v, aruba, fortinet, paloalto, etc.
+  - Compliance tags: hipaa, pci, sox, gdpr, fedramp
+  - Scoring system: 2 points for category match, 1 point per matching tag
+- **Comprehensive E2E Testing:** All bug fixes validated with end-to-end playwright tests confirming navigation, JSON parsing, and archive operations work correctly
+
 **Documentation Management System (October 13, 2025):**
 - Implemented complete CRUD operations for documentation (Create, Read, Update, Delete)
 - Added Firecrawl API integration for automated web scraping and content import
