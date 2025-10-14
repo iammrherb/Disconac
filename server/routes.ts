@@ -1443,6 +1443,80 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ========== Contextual AI Routes ==========
+  
+  app.post('/api/contextual-suggestions', async (req: any, res) => {
+    try {
+      const { currentField, currentValue, allResponses } = req.body;
+      
+      if (!currentField) {
+        return res.status(400).json({ message: "currentField is required" });
+      }
+
+      const { generateContextualSuggestions } = await import('./ai-contextual-service');
+      const suggestions = generateContextualSuggestions(currentField, currentValue, allResponses || {});
+      
+      res.json(suggestions);
+    } catch (error) {
+      console.error("Error generating contextual suggestions:", error);
+      res.status(500).json({ message: "Failed to generate contextual suggestions" });
+    }
+  });
+
+  app.post('/api/industry-comparison', async (req: any, res) => {
+    try {
+      const { responses } = req.body;
+      
+      if (!responses || typeof responses !== 'object') {
+        return res.status(400).json({ message: "responses object is required" });
+      }
+
+      const { generateIndustryComparison } = await import('./ai-contextual-service');
+      const insights = generateIndustryComparison(responses);
+      
+      res.json({ insights });
+    } catch (error) {
+      console.error("Error generating industry comparison:", error);
+      res.status(500).json({ message: "Failed to generate industry comparison" });
+    }
+  });
+
+  app.post('/api/risk-assessment', async (req: any, res) => {
+    try {
+      const { responses } = req.body;
+      
+      if (!responses || typeof responses !== 'object') {
+        return res.status(400).json({ message: "responses object is required" });
+      }
+
+      const { generateRiskAssessment } = await import('./ai-contextual-service');
+      const risks = generateRiskAssessment(responses);
+      
+      res.json({ risks });
+    } catch (error) {
+      console.error("Error generating risk assessment:", error);
+      res.status(500).json({ message: "Failed to generate risk assessment" });
+    }
+  });
+
+  app.post('/api/timeline-estimate', async (req: any, res) => {
+    try {
+      const { responses } = req.body;
+      
+      if (!responses || typeof responses !== 'object') {
+        return res.status(400).json({ message: "responses object is required" });
+      }
+
+      const { generateTimelineEstimate } = await import('./ai-contextual-service');
+      const timeline = generateTimelineEstimate(responses);
+      
+      res.json({ timeline });
+    } catch (error) {
+      console.error("Error generating timeline estimate:", error);
+      res.status(500).json({ message: "Failed to generate timeline estimate" });
+    }
+  });
+
   // ========== Export Routes ==========
 
   app.get('/api/sessions/:sessionId/export/pdf', async (req: any, res) => {
