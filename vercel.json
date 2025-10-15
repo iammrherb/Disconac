@@ -4,7 +4,7 @@
   "devCommand": "npm run dev",
   "installCommand": "npm install --include=dev",
   "framework": null,
-  "outputDirectory": "dist",
+  "outputDirectory": "dist/public",
   "rewrites": [
     {
       "source": "/(.*)",
