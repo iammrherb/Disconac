@@ -487,3 +487,292 @@ export const componentTypes = [
   "SIEM Collector",
   "IoT Fingerprinting Engine"
 ];
+
+// ==================== Current NAC/TACACS Solutions (Migration Assessment) ====================
+
+export const currentNacVendors = [
+  "Cisco ISE (Identity Services Engine)",
+  "Aruba ClearPass",
+  "FortiNAC",
+  "Extreme Control (Netsight/XMC)",
+  "ForeScout CounterACT",
+  "PacketFence",
+  "Microsoft NPS (Network Policy Server)",
+  "Cisco ACS (Access Control Server)",
+  "Bradford Networks",
+  "Pulse Policy Secure",
+  "Juniper Unified Access Control",
+  "TrustSec (Cisco)",
+  "pfSense with RADIUS",
+  "FreeRADIUS",
+  "No current NAC solution",
+  "Other"
+];
+
+export const nacFeatures = [
+  "802.1X Wired Authentication",
+  "802.1X Wireless Authentication",
+  "MAC Authentication Bypass (MAB)",
+  "Guest Access Management",
+  "BYOD Onboarding",
+  "Certificate Provisioning",
+  "Device Profiling",
+  "Network Segmentation (VLAN/SGT)",
+  "Posture Assessment",
+  "Quarantine/Remediation",
+  "TACACS+ Device Administration",
+  "RADIUS Accounting",
+  "API Integration",
+  "SIEM Integration",
+  "MDM Integration"
+];
+
+// ==================== Certificate Authorities ====================
+
+export const certificateAuthorities = [
+  "Microsoft AD Certificate Services (ADCS)",
+  "Microsoft Active Directory Integrated CA",
+  "DigiCert",
+  "Sectigo (Comodo)",
+  "Entrust",
+  "GlobalSign",
+  "Let's Encrypt",
+  "IdenTrust",
+  "GoDaddy",
+  "Thawte",
+  "VeriSign (Symantec)",
+  "Network Solutions",
+  "OpenSSL Self-Signed",
+  "HashiCorp Vault PKI",
+  "AWS Certificate Manager (ACM)",
+  "Azure Key Vault",
+  "Google Cloud Certificate Authority Service",
+  "Internal PKI (Custom)",
+  "No PKI/Certificate infrastructure",
+  "Other"
+];
+
+export const certificateTypes = [
+  "User Certificates",
+  "Machine/Computer Certificates",
+  "Server Certificates",
+  "Wireless Device Certificates",
+  "IoT Device Certificates",
+  "Code Signing Certificates",
+  "SSL/TLS Certificates"
+];
+
+// ==================== Advanced Authentication ====================
+
+export const eapMethods = [
+  "EAP-TLS (Certificate-based)",
+  "EAP-TTLS with PAP",
+  "EAP-TTLS with MSCHAPv2",
+  "EAP-TTLS with EAP-MSCHAPv2",
+  "PEAP-MSCHAPv2",
+  "PEAP-GTC",
+  "PEAP-TLS",
+  "EAP-FAST",
+  "EAP-MD5",
+  "EAP-LEAP (Cisco Legacy)",
+  "Not using EAP authentication"
+];
+
+export const radiusAttributes = [
+  "Filter-ID (VLAN Assignment)",
+  "Tunnel-Type / Tunnel-Medium-Type / Tunnel-Private-Group-ID (Dynamic VLAN)",
+  "Airespace-ACL-Name (Cisco WLC ACL)",
+  "Aruba-User-Role",
+  "Cisco-AVPair (dACL, SGT)",
+  "Session-Timeout",
+  "Idle-Timeout",
+  "Termination-Action",
+  "Framed-IP-Address",
+  "Callback-Number",
+  "Custom Vendor-Specific Attributes (VSA)",
+  "Not using RADIUS attributes"
+];
+
+// ==================== ZTNA Specific ====================
+
+export const ztnaDeploymentModes = [
+  "Cloud-Hosted Gateway (Portnox Cloud)",
+  "On-Premises Gateway (VM/Container)",
+  "Hybrid (Cloud + Local Gateways)",
+  "Per-Site Local Gateways"
+];
+
+export const ztnaAccessTypes = [
+  "Internal Web Applications (HTTP/HTTPS)",
+  "RDP (Remote Desktop Protocol)",
+  "SSH (Secure Shell)",
+  "VNC (Virtual Network Computing)",
+  "Database Access (SQL/PostgreSQL/MySQL)",
+  "File Server Access (SMB/CIFS/NFS)",
+  "Legacy Applications (Citrix/VMware)",
+  "DevOps Tools",
+  "Cloud Applications (SAML/OIDC)",
+  "Custom TCP/UDP Applications"
+];
+
+export const ztnaIdentityProviders = [
+  "Azure AD / Microsoft Entra ID",
+  "Okta",
+  "Google Workspace",
+  "Active Directory (LDAP)",
+  "SAML 2.0 Generic",
+  "OpenID Connect (OIDC) Generic",
+  "Ping Identity",
+  "OneLogin",
+  "JumpCloud",
+  "Auth0",
+  "Other"
+];
+
+// ==================== TACACS+ Deep-Dive ====================
+
+export const tacacsDeviceTypes = [
+  "Routers",
+  "Switches (L2/L3)",
+  "Firewalls",
+  "Wireless Controllers",
+  "Load Balancers",
+  "VPN Concentrators",
+  "NAC Appliances",
+  "F5 BIG-IP",
+  "Cisco ASA",
+  "Palo Alto Networks",
+  "Check Point",
+  "Juniper SRX/EX",
+  "Aruba Controllers",
+  "Other Network Devices"
+];
+
+export const tacacsCommandAuthorizationLevels = [
+  "Privilege Level 0 (User EXEC)",
+  "Privilege Level 1 (Limited User)",
+  "Privilege Level 7 (Monitor)",
+  "Privilege Level 15 (Full Admin)",
+  "Command-by-Command Authorization",
+  "Role-Based Command Sets",
+  "Not using command authorization"
+];
+
+export const tacacsAccountingTypes = [
+  "Command Accounting (All Commands)",
+  "Command Accounting (Priv 15 Only)",
+  "Exec Accounting (Session Start/Stop)",
+  "System Accounting (Device Events)",
+  "Connection Accounting",
+  "Resource Accounting",
+  "Not using TACACS+ accounting"
+];
+
+// ==================== Compliance & Requirements ====================
+
+export const complianceFrameworks = [
+  "HIPAA (Healthcare)",
+  "PCI-DSS (Payment Card Industry)",
+  "SOC 2 Type II",
+  "ISO 27001",
+  "NIST 800-53",
+  "NIST Cybersecurity Framework",
+  "CMMC (Cybersecurity Maturity Model)",
+  "FedRAMP",
+  "GDPR (EU Data Protection)",
+  "CCPA (California Consumer Privacy)",
+  "FISMA (Federal)",
+  "ITAR (International Traffic in Arms)",
+  "CIS Controls",
+  "NERC CIP (Electric Utilities)",
+  "No specific compliance requirements",
+  "Other"
+];
+
+export const securityRequirements = [
+  "Network Segmentation (VLAN/Microsegmentation)",
+  "Zero Trust Network Access",
+  "Device Health/Posture Checking",
+  "Certificate-Based Authentication",
+  "Multi-Factor Authentication (MFA)",
+  "Guest Network Isolation",
+  "IoT Device Isolation",
+  "BYOD Security Policies",
+  "Quarantine/Remediation Network",
+  "Rogue Device Detection",
+  "Anomaly Detection",
+  "Session Monitoring/Recording",
+  "Privileged Access Management (PAM)",
+  "Just-In-Time (JIT) Access",
+  "Least Privilege Access"
+];
+
+// ==================== Migration & Timeline ====================
+
+export const migrationScenarios = [
+  "Greenfield (No existing NAC)",
+  "Replace existing NAC solution",
+  "Augment/Coexist with existing NAC",
+  "Phased migration (site-by-site)",
+  "Proof of Concept (POC) first",
+  "Pilot deployment first"
+];
+
+export const projectTimelines = [
+  "Urgent (< 3 months)",
+  "Standard (3-6 months)",
+  "Extended (6-12 months)",
+  "Long-term (12+ months)",
+  "Flexible timeline"
+];
+
+export const implementationApproach = [
+  "Big Bang (All at once)",
+  "Phased by Site",
+  "Phased by User Group",
+  "Phased by Network Type (Wired/Wireless)",
+  "Pilot → Production Rollout",
+  "POC → Pilot → Production"
+];
+
+// ==================== Integration Requirements ====================
+
+export const apiIntegrations = [
+  "ServiceNow (Ticketing/CMDB)",
+  "Splunk (SIEM)",
+  "Microsoft Sentinel",
+  "CrowdStrike",
+  "Carbon Black",
+  "Cisco ISE (Coexistence)",
+  "Aruba ClearPass (Coexistence)",
+  "VMware vCenter",
+  "Microsoft Intune",
+  "Jamf Pro",
+  "Active Directory",
+  "Azure AD",
+  "AWS",
+  "Azure",
+  "Google Cloud",
+  "Slack",
+  "Microsoft Teams",
+  "PagerDuty",
+  "Custom REST API",
+  "Webhook Integration"
+];
+
+export const automationTools = [
+  "Ansible",
+  "Terraform",
+  "PowerShell",
+  "Python Scripts",
+  "Bash Scripts",
+  "Jenkins",
+  "GitLab CI/CD",
+  "Azure DevOps",
+  "AWS Lambda",
+  "Azure Functions",
+  "Zapier",
+  "Microsoft Power Automate",
+  "No automation tools",
+  "Other"
+];

@@ -68,6 +68,7 @@ export const scopingSessions = pgTable("scoping_sessions", {
   sessionName: text("session_name").notNull(),
   version: text("version").default("2.1"),
   status: text("status").notNull().default("draft"), // draft, in_progress, completed
+  assessmentMode: text("assessment_mode").default("standard"), // quick, standard, deep-dive
   isArchived: boolean("is_archived").default(false),
   completedAt: timestamp("completed_at"),
   createdAt: timestamp("created_at").defaultNow(),

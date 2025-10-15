@@ -119,6 +119,113 @@ POST /api/sessions/:id/best-practices
 POST /api/sessions/:id/implementation-guide
 ```
 
+## Phase 2: Firecrawl & Salesforce Integration (COMPLETED)
+
+### 7. Firecrawl Automated Documentation Crawler
+
+**Files Created:**
+- `server/firecrawl-service.ts` - Automated web crawling service (396 lines)
+- Added 4 new API endpoints in `server/routes.ts`
+
+**Features:**
+- **Automated crawling** from Portnox websites (docs, blog, use cases, resources, legal)
+- **Smart categorization** based on URL patterns
+- **Auto-tagging system** with 25+ categories (same as import script)
+- **Batch URL crawling** with configurable rate limiting and concurrency
+- **Stale documentation refresh** - updates docs older than N days
+- **Crawl status monitoring** - tracks total docs, last update, category distribution
+- **Duplicate prevention** via URL-based upsert
+- **Rate limiting** - 1-2 second delays between batches to respect server resources
+
+**API Endpoints:**
+- `POST /api/documentation/crawl` - Crawl single URL (existing)
+- `POST /api/documentation/crawl-multiple` - Batch crawl multiple URLs
+- `POST /api/documentation/crawl-all-portnox` - Crawl all Portnox sites
+- `GET /api/documentation/crawl-status` - Get crawl statistics
+- `POST /api/documentation/refresh-stale` - Update old documentation
+
+**Configuration:**
+```typescript
+// Crawlable Portnox URLs
+const PORTNOX_CRAWL_URLS = {
+  docs: "https://docs.portnox.com",
+  blog: "https://www.portnox.com/blog",
+  useCases: "https://www.portnox.com/use-cases",
+  resources: "https://www.portnox.com/resources",
+  legal: "https://www.portnox.com/legal",
+};
+```
+
+**Usage Examples:**
+```typescript
+// Crawl all Portnox documentation
+const result = await crawlAllPortnoxDocs({
+  includeBlogs: true,
+  includeUseCases: true,
+  includeResources: true,
+  includeLegal: false,
+});
+
+// Refresh stale docs (older than 30 days)
+const refreshed = await refreshStaleDocumentation(30);
+
+// Get current status
+const status = await getCrawlStatus();
+// Returns: { totalDocs: 706, lastUpdated: Date, categories: {...} }
+```
+
+### 8. Salesforce CRM Integration
+
+**Files Created:**
+- `server/salesforce-service.ts` - Salesforce API integration (408 lines)
+- Added 3 new API endpoints in `server/routes.ts`
+
+**Features:**
+- **OAuth2 authentication** with automatic token refresh
+- **Customer sync** - Maps customer profiles to Salesforce Accounts
+- **Session sync** - Maps scoping sessions to Salesforce Opportunities
+- **Activity logging** - Tracks assessment completion events
+- **Document attachment** - Attaches PDF/Word exports to opportunities
+- **Custom field mapping** for Portnox-specific data:
+  - `Portnox_Customer_Id__c` - Links to Disconac customer
+  - `Portnox_Assessment_Id__c` - Links to Disconac session
+  - `Device_Count__c` - Number of devices from assessment
+  - `Deployment_Type__c` - Cloud/On-Premises/Hybrid
+  - `Industry__c` - Customer industry
+- **Automatic opportunity stage** - Sets stage based on assessment status
+- **Error handling** - Graceful degradation if Salesforce unavailable
+
+**API Endpoints:**
+- `GET /api/salesforce/test-connection` - Test Salesforce credentials
+- `POST /api/salesforce/sync-customer/:customerId` - Sync customer to Account
+- `POST /api/salesforce/sync-session/:sessionId` - Sync session to Opportunity
+
+**Configuration (via app_settings table):**
+```sql
+INSERT INTO app_settings (key, value, description) VALUES
+('salesforce_instance_url', 'https://yourinstance.salesforce.com', 'Salesforce instance URL'),
+('salesforce_client_id', '...', 'Salesforce connected app client ID'),
+('salesforce_client_secret', '...', 'Salesforce connected app secret'),
+('salesforce_access_token', '...', 'OAuth access token (auto-managed)'),
+('salesforce_refresh_token', '...', 'OAuth refresh token (auto-managed)');
+```
+
+**Workflow:**
+1. Configure Salesforce credentials in app_settings
+2. Test connection: `GET /api/salesforce/test-connection`
+3. When assessment is created/updated, sync to Salesforce:
+   - Customer → Salesforce Account
+   - Session → Salesforce Opportunity
+4. On export, optionally attach document to opportunity
+5. Log activities as assessment progresses
+
+**Benefits:**
+- **Single source of truth** - All assessment data in Salesforce
+- **Sales workflow integration** - Opportunities tracked in familiar CRM
+- **Reduced manual entry** - Automatic data sync
+- **Better reporting** - Leverage Salesforce dashboards and reports
+- **Team collaboration** - Multiple team members can view assessments
+
 ## Technical Implementation Details
 
 ### Contextual Suggestion Types
@@ -312,11 +419,11 @@ INSERT INTO app_settings (key, value, description) VALUES
 - ✅ Deployment timeline estimation
 - ✅ 706-item documentation dataset import script
 
-### v2.2.0 (Planned - Phase 2)
-- ⏳ Firecrawl scheduled crawler
-- ⏳ Salesforce integration
-- ⏳ Enhanced export templates
-- ⏳ Use cases and blogs integration
+### v2.2.0 (Phase 2 - Completed)
+- ✅ Firecrawl automated crawler service
+- ✅ Salesforce CRM integration
+- ⏳ Enhanced export templates (pending)
+- ✅ Automated documentation updates from portnox.com
 
 ### v3.0.0 (Planned - Phase 3)
 - ⏳ Flexible assessment paths
