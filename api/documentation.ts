@@ -1,22 +1,13 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { query } from './_shared/db-client.js';
+import { storage } from './_shared/storage.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     if (req.method === 'GET') {
-      const searchQuery = req.query.q as string | undefined;
-      
-      let docs;
-      if (searchQuery) {
-        docs = await query(
-          `SELECT * FROM documentation_links 
-           WHERE title ILIKE $1 OR content ILIKE $1 
-           ORDER BY title`,
-          [`%${searchQuery}%`]
-        );
-      } else {
-        docs = await query('SELECT * FROM documentation_links ORDER BY title');
-      }
+      const query = req.query.q as string | undefined;
+      const docs = query 
+        ? await storage.searchDocumentation(query)
+        : await storage.listDocumentation();
 
       return res.json(docs);
     }
