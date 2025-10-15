@@ -5,10 +5,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     if (req.method === 'GET') {
       const sessions = await query(
-        `SELECT s.*, c."companyName" 
+        `SELECT s.*, c.company_name 
          FROM scoping_sessions s 
-         LEFT JOIN customer_profiles c ON s."customerId" = c.id 
-         ORDER BY s."createdAt" DESC`
+         LEFT JOIN customer_profiles c ON s.customer_id = c.id 
+         ORDER BY s.created_at DESC`
       );
       return res.json(sessions);
     }
@@ -18,10 +18,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       
       const session = await queryOne(
         `INSERT INTO scoping_sessions 
-         ("customerId", "sessionName", "assessmentMode", responses, status, version, "createdAt", "updatedAt")
-         VALUES ($1, $2, $3, $4, 'draft', 1, NOW(), NOW())
+         (customer_id, session_name, assessment_mode, status, version, created_at, updated_at)
+         VALUES ($1, $2, $3, 'draft', '2.1', NOW(), NOW())
          RETURNING *`,
-        [customerId, sessionName, assessmentMode || 'guided', JSON.stringify(responses || {})]
+        [customerId, sessionName, assessmentMode || 'standard']
       );
 
       return res.status(201).json(session);

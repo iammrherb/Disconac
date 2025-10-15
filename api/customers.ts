@@ -4,7 +4,7 @@ import { query, queryOne } from './_shared/db-client.js';
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     if (req.method === 'GET') {
-      const customers = await query('SELECT * FROM customer_profiles ORDER BY "createdAt" DESC');
+      const customers = await query('SELECT * FROM customer_profiles ORDER BY created_at DESC');
       return res.json(customers);
     }
 
@@ -13,10 +13,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       
       const customer = await queryOne(
         `INSERT INTO customer_profiles 
-         ("companyName", industry, "companySize", region, "contactName", "contactEmail", "contactPhone", notes, "createdAt", "updatedAt")
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW(), NOW())
+         (company_name, industry, company_size, contact_name, contact_email, contact_phone, notes, created_at, updated_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), NOW())
          RETURNING *`,
-        [companyName, industry || null, companySize || null, region || null, contactName || null, contactEmail || null, contactPhone || null, notes || null]
+        [companyName, industry || null, companySize || null, contactName || null, contactEmail || null, contactPhone || null, notes || null]
       );
 
       return res.status(201).json(customer);

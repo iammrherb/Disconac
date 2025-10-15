@@ -18,7 +18,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     const user = await queryOne(
-      'SELECT id, email, "firstName", "lastName", "profileImageUrl" FROM users WHERE id = $1',
+      'SELECT id, email, first_name, last_name, profile_image_url FROM users WHERE id = $1',
       [userId]
     );
     
