@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { queryOne } from '../_shared/db-client';
-import { getUserId } from '../_shared/auth-helper';
+import { queryOne } from '../_shared/db-client.js';
+import { getUserId } from '../_shared/auth-helper.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
