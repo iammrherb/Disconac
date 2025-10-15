@@ -1,5 +1,5 @@
 // Utility script to import Portnox documentation from JSON
-import { storage } from "./storage";
+import { storage } from "./storage.js";
 import fs from "fs";
 import path from "path";
 

@@ -46,7 +46,7 @@ import {
   type MilestoneTask,
   type InsertMilestoneTask,
 } from "@shared/schema";
-import { db } from "./db";
+import { db } from "./db.js";
 import { eq, desc, and } from "drizzle-orm";
 
 // Storage interface defining all operations

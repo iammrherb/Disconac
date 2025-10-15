@@ -1,7 +1,7 @@
 // API routes for the Portnox Scoping application
 import type { Express } from "express";
 import { createServer, type Server } from "http";
-import { storage } from "./storage";
+import { storage } from "./storage.js";
 import { z } from "zod";
 import { 
   insertCustomerProfileSchema,
@@ -23,9 +23,9 @@ import {
   generateBestPractices, 
   generateImplementationGuide,
   generateMigrationRecommendations
-} from "./ai-service";
-import { generatePDF, generateWord } from "./export-service";
-import { exportWithTemplate, type ExportTemplate } from "./export-templates";
+} from "./ai-service.js";
+import { generatePDF, generateWord } from "./export-service.js";
+import { exportWithTemplate, type ExportTemplate } from "./export-templates.js";
 
 // Helper function to get authenticated user ID from request
 function getUserId(req: any): string | null {
