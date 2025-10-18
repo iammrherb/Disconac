@@ -1,7 +1,7 @@
 // Database connection using Drizzle ORM with Neon PostgreSQL
 import { Pool, neonConfig } from '@neondatabase/serverless';
 import { drizzle } from 'drizzle-orm/neon-serverless';
-import * as schema from "@shared/schema";
+import * as schema from "../shared/schema.js";
 
 if (typeof WebSocket === 'undefined') {
   const ws = require('ws');
