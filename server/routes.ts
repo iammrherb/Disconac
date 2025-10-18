@@ -17,7 +17,7 @@ import {
   insertNacAssessmentSchema,
   insertProjectMilestoneSchema,
   insertMilestoneTaskSchema
-} from "@shared/schema";
+} from "../shared/schema.js";
 import { 
   generateAIRecommendations, 
   generateBestPractices, 

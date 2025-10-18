@@ -1,6 +1,6 @@
 
 import { storage } from "./storage.js";
-import type { ScopingSession, CustomerProfile } from "@shared/schema";
+import type { ScopingSession, CustomerProfile } from "../shared/schema.js";
 
 interface SalesforceConfig {
   instanceUrl: string;

@@ -1,6 +1,6 @@
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, Table, TableRow, TableCell, WidthType, BorderStyle, UnderlineType } from 'docx';
-import type { ScopingSession, CustomerProfile, DeploymentChecklist, QuestionnaireResponse } from '@shared/schema';
+import type { ScopingSession, CustomerProfile, DeploymentChecklist, QuestionnaireResponse } from '../shared/schema.js';
 
 interface ExportData {
   session: ScopingSession & { customer?: CustomerProfile };

@@ -1,6 +1,6 @@
 // Business logic services for recommendation and checklist generation
 import { storage } from "./storage.js";
-import type { QuestionnaireResponse, DocumentationLink, DeploymentChecklist } from "@shared/schema";
+import type { QuestionnaireResponse, DocumentationLink, DeploymentChecklist } from "../shared/schema.js";
 
 interface ChecklistRecommendation {
   category: string;

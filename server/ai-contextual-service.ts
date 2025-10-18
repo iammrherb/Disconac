@@ -1,4 +1,4 @@
-import type { QuestionnaireResponse } from "@shared/schema";
+import type { QuestionnaireResponse } from "../shared/schema.js";
 
 interface ContextualSuggestion {
   type: "recommendation" | "warning" | "tip" | "best_practice";
